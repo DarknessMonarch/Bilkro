@@ -1,0 +1,185 @@
+.cartContainer {
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tableHeader h1 {
+  font-size: 1rem;
+  font-family: var(--font-outfit-medium);
+}
+
+.inventoryNavBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--tertiary-color);
+  color: var(--background-color);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.inventoryNavBtn:hover {
+  background-color: var(--tertiary-color-light);
+}
+
+.addIcon {
+  font-size: 16px;
+}
+
+.tableContainer {
+  background-color: var(--background-color);
+  border-radius: inherit;
+  overflow: hidden;
+  padding:10px ;
+
+}
+
+.tableContainerInner {
+  overflow-x: auto;
+
+}
+
+.productTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.productTable thead {
+  background-color: var(--background-color);
+}
+
+.productTable th {
+  padding: 16px;
+  text-align: left;
+  color: var(--primary);
+  font-family: var(--font-outfit-medium);
+  border-bottom: 1px solid var(--background-color-dark);
+}
+
+.productTable td {
+  padding: 16px;
+  color: #333;
+  border-bottom: 1px solid var(--background-color-dark);
+}
+
+.productCell {
+  min-width: 220px;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productImageWrapper {
+  width: 35px;
+  height: 35px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--background-color);
+}
+
+.productImage {
+  object-fit: cover;
+}
+
+.productName {
+  font-weight: 500;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.deleteBtn:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.deleteIcon {
+  font-size: 16px;
+}
+
+.noData {
+  text-align: center;
+  color: var(--primary-light-color);
+}
+
+.tableFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f8f9fb;
+  border-top: 1px solid var(--background-color-dark);
+}
+
+.tableFooter h2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-light-color);
+}
+
+.tableFooterBtnContain {
+  display: flex;
+  gap: 8px;
+}
+
+.tableFooterBtn {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tableFooterBtn:hover {
+  background-color: #f3f4f6;
+}
+
+.tableFooterBtn:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Adding styles for the "FULL" badge seen in the design */
+tr:has(.fullBadge) .feedback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fullBadge {
+  background-color: #38a169;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
