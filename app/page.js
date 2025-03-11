@@ -10,7 +10,7 @@ export default function App() {
   useEffect(() => {
     const store = useNotificationStore.getState();
     store.checkNotificationPermission();
-    redirect('/page/inventory');
+    redirect('/authentication/login');
   }, []);
   
   return (

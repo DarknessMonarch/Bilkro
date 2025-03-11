@@ -1,6 +1,6 @@
 services:
   tipsfrontend:
-    container_name: bilkro-frontend
+    container_name: bilkro
     restart: unless-stopped
     build: .
     image: bilkro

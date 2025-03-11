@@ -8,7 +8,7 @@ import { IoAdd, IoClose } from "react-icons/io5";
 import { CiSaveUp2 as SaveIcon } from "react-icons/ci";
 import { BsCameraFill as CameraIcon } from "react-icons/bs";
 import { IoIosArrowBack as BackArrow } from "react-icons/io";
-import FormDropdown from "@/app/components/Form/FormDropdown";
+import FormDropdown from "@/app/components/FormDropdown";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 const FileInput = ({ onChange, idImage, label, required }) => {

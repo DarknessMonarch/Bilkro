@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/Auth";
 import { useState, useEffect, useRef } from "react";
@@ -13,21 +13,17 @@ import {
   FiEye as ShowPasswordIcon,
   FiEyeOff as HidePasswordIcon,
 } from "react-icons/fi";
-import { BiWorld as CountryIcon } from "react-icons/bi";
 import { FaRegUser as UserNameIcon } from "react-icons/fa6";
 import {
   MdOutlineVpnKey as PasswordIcon,
   MdOutlineEmail as EmailIcon,
 } from "react-icons/md";
-import { RiArrowDropDownLine as DropdownIcon } from "react-icons/ri";
 
 export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [referral, setReferral] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
   const [terms, setTerms] = useState(false);
   const searchParams = useSearchParams();
   const { register } = useAuthStore();
@@ -59,7 +55,6 @@ export default function SignUp() {
       setReferral(referralParam);
     }
   }, [searchParams]);
-
 
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
@@ -151,107 +146,99 @@ export default function SignUp() {
             <h1>Create an account</h1>
             <p>Please enter your details to sign up</p>
           </div>
-
-          <div>
-            <label htmlFor="username" className={styles.formLabel}>Username</label>
-            <div className={styles.authInput}>
-              <UserNameIcon className={styles.authIcon} />
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                placeholder="Enter your username"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="email" className={styles.formLabel}>Email</label>
-            <div className={styles.authInput}>
-              <EmailIcon className={styles.authIcon} />
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-          </div>
-
-          <div className={styles.formInput}>
-            <label htmlFor="password" className={styles.formLabel}>Password</label>
-            <div className={styles.authInput}>
-              <PasswordIcon className={styles.authIcon} />
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                required
-              />
-              <button
-                type="button"
-                className={styles.showBtn}
-                onClick={() => togglePasswordVisibility("password")}
-              >
-                {showPassword ? (
-                  <ShowPasswordIcon className={styles.authIcon} />
-                ) : (
-                  <HidePasswordIcon className={styles.authIcon} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.formInput}>
-            <label htmlFor="confirmPassword" className={styles.formLabel}>Confirm Password</label>
-            <div className={styles.authInput}>
-              <PasswordIcon className={styles.authIcon} />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                required
-              />
-              <button
-                type="button"
-                className={styles.showBtn}
-                onClick={() => togglePasswordVisibility("confirmPassword")}
-              >
-                {showConfirmPassword ? (
-                  <ShowPasswordIcon className={styles.authIcon} />
-                ) : (
-                  <HidePasswordIcon className={styles.authIcon} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.termsContainer}>
+          <div className={styles.authInput}>
+            <UserNameIcon className={styles.authIcon} />
             <input
-              type="checkbox"
-              id="terms"
-              checked={terms}
-              onChange={(e) => setTerms(e.target.checked)}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              placeholder="Enter your username"
               required
             />
-            <label
-              onClick={() => router.push("/page/terms", { scroll: false })}
-              htmlFor="terms"
+          </div>
+          <div className={styles.authInput}>
+            <EmailIcon className={styles.authIcon} />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          <div className={styles.authInput}>
+            <PasswordIcon className={styles.authIcon} />
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="••••••••"
+              required
+            />
+            <button
+              type="button"
+              className={styles.showBtn}
+              onClick={() => togglePasswordVisibility("password")}
             >
-              I accept the Terms and Conditions
-            </label>
+              {showPassword ? (
+                <ShowPasswordIcon className={styles.authIcon} />
+              ) : (
+                <HidePasswordIcon className={styles.authIcon} />
+              )}
+            </button>
+          </div>
+          <div className={styles.authInput}>
+            <PasswordIcon className={styles.authIcon} />
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              placeholder="••••••••"
+              required
+            />
+            <button
+              type="button"
+              className={styles.showBtn}
+              onClick={() => togglePasswordVisibility("confirmPassword")}
+            >
+              {showConfirmPassword ? (
+                <ShowPasswordIcon className={styles.authIcon} />
+              ) : (
+                <HidePasswordIcon className={styles.authIcon} />
+              )}
+            </button>
+          </div>
+          <div className={styles.termsContainer}>
+            <div className={styles.terms}>
+              <input
+                type="checkbox"
+                id="terms"
+                checked={terms}
+                onChange={(e) => setTerms(e.target.checked)}
+                required
+              />
+              <label
+                // onClick={() => router.push("/page/terms", { scroll: false })}
+                htmlFor="terms"
+              >
+                I accept Terms & Conditions
+              </label>
+            </div>
+
+            <div
+              className={styles.forgotPassword}
+              onClick={() => router.push("resetcode")}
+            >
+              <span>Forgot password</span>
+            </div>
           </div>
 
           <button
@@ -259,16 +246,16 @@ export default function SignUp() {
             disabled={isLoading}
             className={styles.formAuthButton}
           >
-            {isLoading ? <Loader /> : "Sign up"}
+            {isLoading ? <Loader /> : "Login"}
           </button>
 
           <div className={styles.signupPrompt}>
-            Already have an account?{" "}
+            Don&apos;t have an account?{" "}
             <span
               className={styles.signupLink}
-              onClick={() => router.push("login", { scroll: false })}
+              onClick={() => router.push("signup", { scroll: false })}
             >
-              Sign in
+              Signup
             </span>
           </div>
         </form>
