@@ -86,9 +86,20 @@ export const useProductStore = create(
       },
 
       // Get product by QR code
-      getProductByQrCode: async (productId) => {
+      getProductByQrCode: async (qrCodeData) => {
         try {
           set({ loading: true, error: null });
+          
+          // Process QR code data
+          let productId;
+          try {
+            // Check if QR code data is JSON
+            const parsedData = JSON.parse(qrCodeData);
+            productId = parsedData.id || parsedData._id || qrCodeData;
+          } catch (e) {
+            // If not JSON, use as is
+            productId = qrCodeData;
+          }
           
           const response = await fetch(`${SERVER_API}/product/qr/${productId}`);
           
@@ -250,13 +261,24 @@ export const useProductStore = create(
       },
 
       // Add product to cart from QR code
-      addToCartFromQrCode: async (productId, quantity = 1) => {
+      addToCartFromQrCode: async (qrCodeData, quantity = 1) => {
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
           
           if (!accessToken) {
             throw new Error('Authentication required');
+          }
+          
+          // Process QR code data
+          let productId;
+          try {
+            // Check if QR code data is JSON
+            const parsedData = JSON.parse(qrCodeData);
+            productId = parsedData.id || parsedData._id || qrCodeData;
+          } catch (e) {
+            // If not JSON, use as is
+            productId = qrCodeData;
           }
           
           const response = await fetch(`${SERVER_API}/product/qr/${productId}/add-to-cart`, {

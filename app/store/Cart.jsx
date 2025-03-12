@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "@/app/store/Auth";
+import { useProductStore } from "@/app/store/Product";
 
 const SERVER_API = process.env.NEXT_PUBLIC_SERVER_API;
 
@@ -16,29 +17,31 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
           const response = await fetch(`${SERVER_API}/cart`, {
             headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           });
-          
+
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           const data = await response.json();
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to fetch cart');
+            throw new Error(data.message || "Failed to fetch cart");
           }
         } catch (error) {
           set({ error: error.message });
@@ -53,31 +56,37 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
+          if (!productId) {
+            throw new Error("Product ID is required");
+          }
+
           const response = await fetch(`${SERVER_API}/cart/add`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ productId, quantity })
+            body: JSON.stringify({ productId, quantity }),
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              data.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to add item to cart');
+            throw new Error(data.message || "Failed to add item to cart");
           }
         } catch (error) {
           set({ error: error.message });
@@ -92,31 +101,37 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
+          if (!itemId) {
+            throw new Error("Item ID is required");
+          }
+
           const response = await fetch(`${SERVER_API}/cart/item/${itemId}`, {
-            method: 'PUT',
+            method: "PUT",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ quantity })
+            body: JSON.stringify({ quantity }),
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              data.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to update cart item');
+            throw new Error(data.message || "Failed to update cart item");
           }
         } catch (error) {
           set({ error: error.message });
@@ -131,29 +146,35 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
+          if (!itemId) {
+            throw new Error("Item ID is required");
+          }
+
           const response = await fetch(`${SERVER_API}/cart/item/${itemId}`, {
-            method: 'DELETE',
+            method: "DELETE",
             headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              data.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to remove item from cart');
+            throw new Error(data.message || "Failed to remove item from cart");
           }
         } catch (error) {
           set({ error: error.message });
@@ -163,48 +184,70 @@ export const useCartStore = create(
         }
       },
 
+      // Fix for the checkout function in useCartStore
       checkout: async (paymentMethod, customerInfo) => {
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+          const currentCart = get().cart;
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
+          // Ensure we have a valid cart with items
+          if (
+            !currentCart ||
+            !currentCart.items ||
+            currentCart.items.length === 0
+          ) {
+            throw new Error("Cart is empty");
+          }
+
+          // Include cart items information in the request
+          const checkoutData = {
+            paymentMethod,
+            customerInfo,
+            items: currentCart.items.map((item) => ({
+              productId: item.productId || item._id,
+              quantity: item.quantity,
+            })),
+          };
+
           const response = await fetch(`${SERVER_API}/cart/checkout`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ paymentMethod, customerInfo })
+            body: JSON.stringify(checkoutData),
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              data.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           if (data.success) {
-            // Reset cart after successful checkout
             set({ cart: null });
-            return { 
-              success: true, 
+            return {
+              success: true,
               data: data.data,
-              message: 'Checkout completed successfully'
+              message: "Checkout completed successfully",
             };
           } else {
-            throw new Error(data.message || 'Failed to complete checkout');
+            throw new Error(data.message || "Failed to complete checkout");
           }
         } catch (error) {
           set({ error: error.message });
-          return { 
-            success: false, 
+          return {
+            success: false,
             message: error.message,
             // If there are unavailable items, pass them along
-            unavailableItems: error.unavailableItems || []
+            unavailableItems: error.unavailableItems || [],
           };
         } finally {
           set({ loading: false });
@@ -216,29 +259,31 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
           const response = await fetch(`${SERVER_API}/cart/clear`, {
-            method: 'DELETE',
+            method: "DELETE",
             headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           });
-          
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              data.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to clear cart');
+            throw new Error(data.message || "Failed to clear cart");
           }
         } catch (error) {
           set({ error: error.message });
@@ -247,37 +292,74 @@ export const useCartStore = create(
           set({ loading: false });
         }
       },
-      
-      // Add to cart from QR code (reusing existing function from product store)
-      addToCartFromQrCode: async (productId, quantity = 1) => {
+
+      // Add to cart from QR code
+      addToCartFromQrCode: async (qrCodeData, quantity = 1) => {
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
-          const response = await fetch(`${SERVER_API}/product/qr/${productId}/add-to-cart`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({ quantity })
-          });
-          
+
+          if (!qrCodeData) {
+            throw new Error("QR code data is required");
+          }
+
+          // Process QR code data to extract product ID
+          let productId;
+          try {
+            // Check if QR code data is JSON
+            const parsedData = JSON.parse(qrCodeData);
+            productId = parsedData.id || parsedData._id;
+
+            if (!productId) {
+              throw new Error("Invalid QR code format");
+            }
+          } catch (e) {
+            // If not JSON, use as is
+            productId = qrCodeData;
+          }
+
+          // Check if productId is valid
+          if (!productId) {
+            throw new Error("Product ID is required");
+          }
+
+          // First, try to get the product to verify it exists
+          const productStore = useProductStore.getState();
+          const productResult = await productStore.getProductByQrCode(
+            qrCodeData
+          );
+
+          if (!productResult.success) {
+            throw new Error("Product not found");
+          }
+
+          const response = await fetch(
+            `${SERVER_API}/product/qr/${productId}/add-to-cart`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ quantity }),
+            }
+          );
+
           const data = await response.json();
-          
+
           if (!response.ok) {
-            throw new Error(data.message || 'Failed to add product to cart');
+            throw new Error(data.message || "Failed to add product to cart");
           }
-          
+
           if (data.success) {
             set({ cart: data.data });
             return { success: true, data: data.data };
           } else {
-            throw new Error(data.message || 'Failed to add product to cart');
+            throw new Error(data.message || "Failed to add product to cart");
           }
         } catch (error) {
           set({ error: error.message });
@@ -292,11 +374,11 @@ export const useCartStore = create(
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
-          
+
           if (!accessToken) {
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
           }
-          
+
           // Build query string from params
           const queryParams = new URLSearchParams();
           Object.entries(params).forEach(([key, value]) => {
@@ -304,32 +386,36 @@ export const useCartStore = create(
               queryParams.append(key, value);
             }
           });
-          
-          const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-          
+
+          const queryString = queryParams.toString()
+            ? `?${queryParams.toString()}`
+            : "";
+
           const response = await fetch(`${SERVER_API}/cart/all${queryString}`, {
             headers: {
-              'Authorization': `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           });
-          
+
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
           }
-          
+
           const data = await response.json();
-          
+
           if (data.success) {
-            return { 
-              success: true, 
-              data: data.data, 
-              total: data.total, 
-              totalPages: data.totalPages, 
-              currentPage: data.currentPage 
+            return {
+              success: true,
+              data: data.data,
+              total: data.total,
+              totalPages: data.totalPages,
+              currentPage: data.currentPage,
             };
           } else {
-            throw new Error(data.message || 'Failed to fetch carts');
+            throw new Error(data.message || "Failed to fetch carts");
           }
         } catch (error) {
           set({ error: error.message });
@@ -341,11 +427,11 @@ export const useCartStore = create(
 
       // Reset cart data
       clearCartData: () => {
-        set({ 
+        set({
           cart: null,
-          error: null
+          error: null,
         });
-      }
+      },
     }),
     {
       name: "cart-store",

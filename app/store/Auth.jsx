@@ -76,14 +76,16 @@ export const useAuthStore = create(
           const data = await response.json();
       
           if (data.status === "success") {
-            get().setUser(data.data.user);
+            get().setUser({
+              ...data.data.user,
+              tokens: data.data.tokens
+            });
             return { success: true, message: data.message };
           }
-
+      
           return { success: false, message: data.message };
         } catch (error) {
           return { success: false, message: `Registration failed: ${error.message}` };
-          
         }
       },
 

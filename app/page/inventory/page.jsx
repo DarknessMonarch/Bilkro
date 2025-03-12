@@ -7,11 +7,11 @@ import { IoAdd } from "react-icons/io5";
 import Filter from "@/app/components/Filter";
 import Nothing from "@/app/components/Nothing";
 import { useProductStore } from "@/app/store/Product";
-import { useCartStore } from "@/app/store/Cart"; // Import the cart store
+import { useCartStore } from "@/app/store/Cart"; 
 import ProductCard from "@/app/components/cards/ProductCard";
 import styles from "@/app/styles/inventory.module.css";
 import EmptyProductImg from "@/public/assets/empty.png";
-import { toast } from "sonner"; // Import toast for notifications
+import { toast } from "sonner";
 
 export default function Inventory() {
   const router = useRouter();

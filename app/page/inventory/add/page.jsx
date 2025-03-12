@@ -289,7 +289,7 @@ export default function InventoryForm() {
       
       if (result.success) {
         toast.success("Product added successfully");
-        router.push("inventory"); // Redirect to inventory page
+        router.push("/page/inventory"); 
       } else {
         toast.error(result.message || "Failed to add product");
       }

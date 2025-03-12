@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { BsCartPlus as CartIcon } from "react-icons/bs";
 import { FaTrashAlt as DeleteIcon } from "react-icons/fa";
 import { useCartStore } from "@/app/store/Cart";
+import { useProductStore } from "@/app/store/Product";
 import { toast } from "sonner";
 
 const itemsPerPage = 7;
@@ -99,6 +100,11 @@ export default function CartPage() {
     }
     
     try {
+      if (!cart || !cart.items || cart.items.length === 0) {
+        toast.error("Your cart is empty");
+        return;
+      }
+      
       const result = await checkout(paymentMethod, customerInfo);
       
       if (result.success) {
@@ -434,13 +440,6 @@ export default function CartPage() {
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
               </div>
-              <button 
-                className={styles.checkoutBtn}
-                onClick={handleCheckout}
-                disabled={cartItems.length === 0}
-              >
-                Proceed to Checkout
-              </button>
             </div>
           )}
         </>

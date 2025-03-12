@@ -17,6 +17,7 @@ import { TbReportAnalytics as ReportIcon } from "react-icons/tb";
 import { HiOutlineHome as DashboardIcon } from "react-icons/hi2";
 import { MdOutlineSettings as SettingsIcon } from "react-icons/md";
 import { MdOutlineInventory2 as InventoryIcon } from "react-icons/md";
+import { MdQrCodeScanner as ScannerIcon } from "react-icons/md";
 import Loading from "@/app/components/StateLoader";
 
 export default function SideNav() {
@@ -140,6 +141,7 @@ export default function SideNav() {
               <h1>Inventory</h1>
             </div>
           </Link>
+
           <Link href="/page/reports" className={styles.sideLink}>
             <div
               className={`${styles.innerSideLink} ${
@@ -157,7 +159,23 @@ export default function SideNav() {
               <h1>Reports</h1>
             </div>
           </Link>
-
+          <Link href="/page/scan" className={styles.sideLink}>
+            <div
+              className={`${styles.innerSideLink} ${
+                pathname === "/page/scan" ||
+                pathname.startsWith("/page/scan/")
+                  ? styles.activeLink
+                  : ""
+              }`}
+            >
+              <ScannerIcon
+                alt="scanner icon"
+                aria-label="scanner icon"
+                className={styles.linkIcon}
+              />
+              <h1>Scan</h1>
+            </div>
+          </Link>
           <Link href="/page/cart" className={styles.sideLink}>
             <div
               className={`${styles.innerSideLink} ${
@@ -170,6 +188,7 @@ export default function SideNav() {
               <h1>Cart</h1>
             </div>
           </Link>
+          
         </div>
         <div className={styles.sideBottomContainer}>
           <Link href="/page/settings" className={styles.sideLink}>

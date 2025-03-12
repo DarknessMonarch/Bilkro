@@ -161,11 +161,11 @@ export default function EditInventoryForm({ params }) {
           const result = await getProductById(productId);
           if (!result.success) {
             toast.error("Failed to fetch product data");
-            router.push("/inventory");
+            router.push("/page/inventory");
           }
         } catch (err) {
           toast.error("Error fetching product data");
-          router.push("/inventory");
+          router.push("/page/inventory");
         } finally {
           setIsLoading(false);
         }
@@ -355,7 +355,7 @@ export default function EditInventoryForm({ params }) {
 
       if (result.success) {
         toast.success("Product updated successfully");
-        router.push("/inventory"); // Redirect to inventory page
+        router.push("/page/inventory"); // Redirect to inventory page
       } else {
         toast.error(result.message || "Failed to update product");
       }
