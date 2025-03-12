@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import debounce from "lodash.debounce";
 import { useAuthStore } from "@/app/store/Auth";
-import Profile from "@/public/assets/profile.png";
+import Profile from "@/public/assets/profile.png"; 
 import Loading from "@/app/components/StateLoader";
 import { useDrawerStore } from "@/app/store/Drawer";
 import styles from "@/app/styles/navbar.module.css";
@@ -17,7 +17,6 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   RiMenu4Fill as MenuIcon,
   RiSearch2Line as SearchIcon,
-  RiUserLine as UserIcon,
 } from "react-icons/ri";
 
 import {
@@ -58,8 +57,7 @@ export default function NavbarComponent() {
   const [isMobile, setIsMobile] = useState(false);
   const [search, setSearch] = useState("");
 
-  const { isAuth, username, profileImage, isAdmin, isVip, logout } =
-    useAuthStore();
+  const { isAuth, username, profileImage, logout } = useAuthStore();
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -120,13 +118,26 @@ export default function NavbarComponent() {
     }
   }, [isNotificationAllowed, checkNotificationPermission, toggleNotification]);
 
-  const handleLogin = useCallback(() => {
-    router.push("/authentication/login", { scroll: false });
-  }, [router]);
-
+  const handleLogout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await logout();
+      if (result.success) {
+        toast.success("Logged out successfully");
+        router.push("/authentication/login");
+      } else {
+        toast.error(result.message || "Logout failed");
+      }
+    } catch (error) {
+      toast.error("An error occurred during logout");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [logout, router]);
 
   return (
     <>
+      {isLoading && <Loading />}
       <div className={styles.navMain}>
         <div className={styles.navContainer}>
           <div className={styles.navContainerLeft}>
@@ -147,41 +158,46 @@ export default function NavbarComponent() {
             )}
           </div>
           <div
-              className={styles.userSection}
-              style={{ width: !isOpen || isMobile ? "auto" : "" }}
-            >
-              <div className={styles.userProfile}>
-                <Image
-                  src={Profile}
-                  height={35}
-                  alt={`${username}'s profile`}
-                  priority
-                  className={styles.profileImg}
-                />
-              </div>
-              <div
-                className={`${styles.notificationContainer} ${
-                  totalNotifications > 0 ? styles.activeNotification : ""
-                } }`}
-                onClick={handleNotificationClick}
-                title={
-                  isNotificationAllowed
-                    ? `${totalNotifications} total notifications`
-                    : "Enable notifications"
-                }
-              >
-                <div className={styles.notificationStatus}>
-                  {isNotificationAllowed && unreadCount > 0 && (
-                    <span>{unreadCount}</span>
-                  )}
-                  {isNotificationAllowed ? (
-                    <NotificationIcon className={styles.notificationIcon} />
-                  ) : (
-                    <NoNotificationIcon className={styles.notificationIcon} />
-                  )}
+            className={styles.userSection}
+            style={{ width: !isOpen || isMobile ? "auto" : "" }}
+          >
+            {isAuth && (
+              <>
+                <div className={styles.userProfile}>
+                  <Image
+                    src={profileImage || Profile}
+                    width={35}
+                    height={35}
+                    alt={`${username}'s profile`}
+                    priority
+                    className={styles.profileImg}
+                  />
                 </div>
-              </div>
-            </div>
+                <div
+                  className={`${styles.notificationContainer} ${
+                    totalNotifications > 0 ? styles.activeNotification : ""
+                  }`}
+                  onClick={handleNotificationClick}
+                  title={
+                    isNotificationAllowed
+                      ? `${totalNotifications} total notifications`
+                      : "Enable notifications"
+                  }
+                >
+                  <div className={styles.notificationStatus}>
+                    {isNotificationAllowed && unreadCount > 0 && (
+                      <span>{unreadCount}</span>
+                    )}
+                    {isNotificationAllowed ? (
+                      <NotificationIcon className={styles.notificationIcon} />
+                    ) : (
+                      <NoNotificationIcon className={styles.notificationIcon} />
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
         {/* Mobile search bar */}
         {isSearchablePage && (

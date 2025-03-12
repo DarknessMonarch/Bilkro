@@ -11,6 +11,11 @@ module.exports = {
         protocol: "https",
         hostname: "i.postimg.cc",
         port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "minioapi.swiftsyn.com",
+        port: "",
       }
     ],
   },

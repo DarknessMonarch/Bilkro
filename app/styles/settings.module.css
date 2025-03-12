@@ -1,6 +1,6 @@
 @media screen {
   .formSettingContainer {
-    gap: 10px;
+    gap: 20px;
     width: 100%;
     display: flex;
     overflow: hidden;
@@ -21,69 +21,85 @@
   .settingWrap {
     width: 100%;
     display: flex;
-    padding: 10px;
+    padding: 20px;
     min-width: 200px;
     position: relative;
     border-radius: 15px;
     flex-direction: column;
     border: 1px solid var(--line-color);
-    background-color: var(--primary-light-color);
+    background-color: var(--background-color);
+    box-shadow: var(--box-shadow-line);
+  }
+
+  .profileHeaderWrap {
+    text-align: center;
+    padding: 30px 20px;
   }
 
   .profileSection {
-    gap: 10px;
+    gap: 20px;
     display: flex;
     align-items: center;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
   }
 
   .profileImageContain {
-    width: 100px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     display: flex;
     position: relative;
     align-items: center;
-    border-radius: 15px;
+    border-radius: 360%;
+    min-width: 120px;
+    min-height: 120px;
     flex-direction: column;
     justify-content: center;
   }
 
+  .loadingImageOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    border-radius: 360%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(56, 62, 73, 0.7);
+  }
+
   .profileImage {
-    width: inherit;
-    height: inherit;
-    object-fit: cover;
+    width: 100%;
+    height: 100%;
     border-radius: inherit;
-    object-position: center;
-    border: 4px solid var(--line-color);
   }
 
   .uploadEditIcon {
-    bottom: -10px;
-    width: 50px;
-    right: -10px;
-    height: 60px;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
     display: flex;
     cursor: pointer;
     position: absolute;
-    border-radius: 15px;
+    border-radius: 50%;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--line-color);
-    background-color: var(--primary-color);
+    border: 2px solid var(--background-color);
+    background-color: var(--tertiary-color);
+    transition: all 0.3s ease;
   }
 
   .uploadEditIcon:hover {
-    background-color: var(--tertiary-color);
+    background-color: var(--tertiary-color-light);
+    transform: scale(1.1);
   }
 
   .editIcon {
-    font-size: 24px;
-    fill: var(--tertiary-color);
-  }
-
-  .uploadEditIcon:hover .editIcon {
-    fill: var(--background-color);
+    font-size: 18px;
+    color: var(--background-color);
   }
 
   .profileDetails {
@@ -97,88 +113,69 @@
   }
 
   .profileDetails h1 {
-    font-size: 1rem;
-    color: var(--tertiary-color);
-    font-family: var(--font-poppins-regular);
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
   }
 
   .profileGlass {
     gap: 5px;
-    padding: 10px;
+    padding: 8px 15px;
     display: flex;
-    border-radius: 15px;
+    margin: 0 auto;
+    border-radius: 25px;
     flex-direction: column;
-    background-color: var(--line-color);
-  }
-
-  .profileGlass h3,
-  .profileGlass h2 {
-    font-size: 0.9rem;
+    background-color: var(--background-color-dark);
+    box-shadow: var(--depth-shadow);
   }
 
   .profileGlass h3 {
+    font-size: 0.9rem;
+    color: var(--primary-light-color);
     text-transform: lowercase;
-    font-family: var(--font-poppins-extralight);
   }
 
-
-  .socialWrapper {
-    gap: 15px;
+  /* Tab Selector */
+  .tabSelector {
     display: flex;
     flex-direction: column;
-  }
-
-  .socialContainer {
-    gap: 14px;
-    display: flex;
-    justify-content: space-around;
-  }
-
-  .shareLinkCopy {
-    gap: 10px;
-    display: flex;
-    padding: 10px;
-    cursor: pointer;
+    width: 100%;
     border-radius: 15px;
-    align-items: center;
-    background-color: var(--primary-lighter-color);
-
-  }
-
-  .shareLinkCopy p {
-    font-size: 0.8rem;
-    color: var(--dark-light);
-  }
-  
-  .socialIcon {
-    width: 25px;
-    height: 25px;
-    cursor: pointer;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .shareicon {
-    cursor: pointer;
-    font-size: 20px;
-  }
-
-  .copyField {
-    gap: 10px;
-    width: 200px;
-    display: flex;
     overflow: hidden;
-    align-items: center;
-    cursor: pointer;
-    text-wrap: nowrap;
+    background-color: var(--background-color);
+    box-shadow: var(--box-shadow-line);
   }
 
-  .copyInner {
+  .tabButton {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-bottom: 1px solid var(--background-color-dark);
+    background-color: var(--background-color);
+    color: var(--primary-light-color);
+    transition: all 0.3s ease;
   }
-  
+
+  .tabButton:last-child {
+    border-bottom: none;
+  }
+
+  .tabButton:hover {
+    background-color: var(--background-color-dark);
+    color: var(--tertiary-color);
+  }
+
+  .activeTab {
+    background-color: var(--background-color-dark);
+    color: var(--tertiary-color);
+    border-left: 4px solid var(--tertiary-color);
+    font-weight: bold;
+  }
 
   .settingWrapinfo {
     gap: 20px;
@@ -191,48 +188,56 @@
   .settingWrapS {
     gap: 20px;
     display: flex;
-    padding: 10px;
+    padding: 25px;
     width: inherit;
     border-radius: 15px;
     align-items: center;
     flex-direction: column;
     border: 1px solid var(--line-color);
-    background-image: var(--background-image);
-    background-color: var(--primary-light-color);
+    background-color: var(--background-color);
+    box-shadow: var(--box-shadow);
   }
 
   .settingInputContainer {
-    gap: 20px;
+    gap: 10px;
     width: 100%;
     display: flex;
     flex-direction: column;
   }
 
   .settingLabel {
-    font-family: var(--font-poppins-extralight);
+    font-weight: 500;
     text-transform: capitalize;
-    color: var(--light-color);
-    text-wrap: nowrap;
+    color: var(--primary-color);
     font-size: 1rem;
   }
 
   .settingInput {
-    gap: 20px;
+    gap: 15px;
     width: 100%;
     display: flex;
-    padding: 10px 20px;
-    border-radius: 15px;
+    padding: 12px 20px;
+    border-radius: 10px;
     align-items: center;
-    color: var(--dark-light);
-    background-color: var(--primary-lighter-color);
+    color: var(--primary-color);
+    background-color: var(--background-color-dark);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .settingInput:focus-within {
+    border-color: var(--tertiary-color);
+    box-shadow: 0 0 0 2px rgba(19, 102, 217, 0.1);
   }
 
   .settingIcon {
-    font-size: 20px;
-    color: var(--dark-light);
+    font-size: 18px;
+    color: var(--primary-light-color);
+    transition: color 0.3s ease;
   }
 
-  .settingInput:hover .settingIcon {
+  .settingInput:hover .settingIcon,
+  .settingInput:focus-within .settingIcon {
     color: var(--tertiary-color);
   }
 
@@ -240,9 +245,10 @@
     width: 100%;
     border: none;
     outline: none;
-    padding: 10px;
-    color: var(--dark-light);
+    padding: 5px 0;
+    color: var(--primary-color);
     background: transparent;
+    font-size: 1rem;
   }
 
   .settingInput input:-webkit-autofill,
@@ -250,7 +256,7 @@
   .settingInput input:-webkit-autofill:focus,
   .settingInput input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: var(--dark-light) !important;
+    -webkit-text-fill-color: var(--primary-color) !important;
   }
 
   .settingInput input:focus {
@@ -258,149 +264,213 @@
   }
 
   .settingInput input::placeholder {
-    font-size: 0.8rem;
-    text-transform: capitalize;
-    color: var(--dark-light);
+    font-size: 0.9rem;
+    color: var(--primary-light-color);
+  }
+
+  .actionButtonContainer {
+    width: 100%;
+    margin-top: 10px;
   }
 
   .errorText {
-    font-size: 0.8rem;
-    list-style: none;
+    font-size: 0.85rem;
+    color: var(--return-color);
+    margin-top: -5px;
+    margin-bottom: 5px;
+  }
+
+  .infoText {
+    font-size: 0.85rem;
+    color: var(--primary-light-color);
     text-align: center;
+    margin-top: 10px;
+  }
+
+  .infoText span {
+    font-weight: bold;
     color: var(--tertiary-color);
   }
 
-  .dropdownContainer {
-    width: 100%;
-    height: 40px;
+  .formsettingButton {
     display: flex;
-    padding: 10px;
-    cursor: pointer;
-    position: relative;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .dropdownContainer span {
-    font-size: 1rem;
-  }
-
-  .dropdownInput {
     gap: 10px;
     width: 100%;
-    display: flex;
-    border-radius: 15px;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .dropdownIcon {
-    font-size: 24px;
-  }
-
-  .dropdownArea {
-    top: 60px;
-    z-index: 99;
-    width: 100%;
-    padding: 10px;
-    display: flex;
-    max-height: 350px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: absolute;
-    border-radius: 15px;
-    flex-direction: column;
-    border: 1px solid var(--line-color);
-    background-color: var(--primary-lighter-color);
-  }
-
-  .dropdownArea span {
-    padding: 10px;
-  }
-
-  .dropdownArea span:hover {
-    border-radius: 15px;
-    color: var(--primary-color);
-    background-color: var(--tertiary-color);
-  }
-
-  .formsettingButton {
-    gap: 15px;
-    width: 100%;
+    height: 50px;
     cursor: pointer;
     font-size: 1rem;
-    max-height: 60px;
-    min-height: 60px;
-    border-radius: 15px;
-    color: var(--primary-color);
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 500;
+    color: var(--background-color);
     background-color: var(--tertiary-color);
+    transition: all 0.3s ease;
+    border: none;
   }
 
   .formsettingButton:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--tertiary-color-light);
+    transform: translateY(-2px);
+  }
+
+  .formsettingButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .showBtn {
     cursor: pointer;
-    color: var(--primary-color);
     background-color: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
 
   .dangerZone {
-    gap: 10px;
-    padding: 10px;
+    gap: 20px;
+    padding: 25px;
     display: flex;
     border-radius: 15px;
     flex-direction: column;
-    border: 1px solid var(--loose-color);
+    border: 1px solid var(--return-color);
+    background-color: rgba(255, 107, 107, 0.05);
+    box-shadow: var(--box-shadow);
   }
 
   .dangerZone h2 {
-    font-size: 1rem;
-    color: var(--loose-color);
+    font-size: 1.2rem;
+    color: var(--return-color);
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 107, 107, 0.3);
+    padding-bottom: 10px;
+  }
+  
+  .dangerText {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
   
   .deleteAccount {
-    justify-content: space-between;
-    color:  var(--loose-color);
-    flex-direction: column;
-    align-items: center;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    color: var(--primary-color);
+    gap: 20px;
+    background-color: rgba(255, 107, 107, 0.1);
+    padding: 20px;
+    border-radius: 10px;
   }
 
-  
   .deleteInfo {
-    gap: 10px;
+    gap: 15px;
     display: flex;
-    text-align: center;
+    text-align: left;
     align-items: center;
-    flex-direction: column;
   }
   
   .deleteIcon {
-    font-size: 50px;
-    color:  var(--loose-color);
+    font-size: 40px;
+    color: var(--return-color);
+    min-width: 40px;
   }
   
+  .deleteInfo div h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
+  
+  .deleteInfo div p {
+    font-size: 0.9rem;
+    color: var(--primary-light-color);
+  }
   
   .deleteButton {
     width: 100%;
-    padding: 10px;
+    height: 50px;
     cursor: pointer;
     font-size: 1rem;
-    max-height: 60px;
-    min-height: 60px;
-    border-radius: 15px;
-    color: var(--light-color);
-    background-color: var(--loose-color);
+    border-radius: 10px;
+    font-weight: 500;
+    color: white;
+    background-color: var(--return-color);
+    transition: all 0.3s ease;
+    border: none;
   }
 
   .deleteButton:hover {
-    background-color: var(--light-loose-color);
+    background-color: #ff5252;
+  }
+
+  .deleteButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 }
+
+/* Tablet and Desktop Styles */
+@media only screen and (min-width: 48em) {
+  .formSettingContainer {
+    height: 100%;
+    padding: 30px 0;
+  }
+
+  .formSettingContainerInner {
+    width: 80%;
+    max-width: 900px;
+    flex-direction: column;
+  }
+
+  .profileSection {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 30px;
+  }
+
+  .profileDetails {
+    text-align: left;
+  }
+
+  .tabSelector {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .tabButton {
+    flex: 1;
+    border-bottom: none;
+    border-right: 1px solid var(--background-color-dark);
+  }
+
+  .tabButton:last-child {
+    border-right: none;
+  }
+
+  .activeTab {
+    border-left: none;
+    border-bottom: 4px solid var(--tertiary-color);
+  }
+
+  .deleteAccount {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .deleteInfo {
+    max-width: 70%;
+  }
+
+  .deleteButton {
+    width: auto;
+    padding: 0 30px;
+  }
+}
+
 
 /* using it as global style for larger devices  */
 @media only screen and (min-width: 48em) {
@@ -455,24 +525,138 @@
 
 }
 
-/* ipad pro screens & laptop */
 @media only screen and (min-width: 49em) and (max-width: 64em) {
   .formSettingContainerInner {
-    width: calc(100% / 2);
+    width: 70%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .profileHeaderWrap {
+    padding: 40px 30px;
+  }
+  
+  .profileImageContain {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .settingWrapS {
+    padding: 30px;
   }
 }
 
 /* large screens : Desktop and 4k screens */
-
 @media only screen and (min-width: 64.063em) and (max-width: 90em) {
   .formSettingContainerInner {
-    width: calc(100% / 2);
+    width: 60%;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .profileHeaderWrap {
+    padding: 50px 40px;
+  }
+  
+  .tabSelector {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .settingWrapinfo {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .settingWrapS {
+    padding: 40px;
+  }
+  
+  .dangerZone {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
   }
 }
 
 /* 5k screens and above */
 @media only screen and (min-width: 91em) {
   .formSettingContainerInner {
-    width: calc(100% / 2);
+    width: 50%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .profileHeaderWrap {
+    padding: 60px 50px;
+  }
+  
+  .profileImageContain {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .profileDetails h1 {
+    font-size: 2rem;
+  }
+  
+  .profileGlass h3 {
+    font-size: 1.1rem;
+  }
+  
+  .tabSelector {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .tabButton {
+    padding: 20px;
+    font-size: 1.2rem;
+  }
+  
+  .settingWrapinfo {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .settingWrapS {
+    padding: 50px;
+  }
+  
+  .settingLabel {
+    font-size: 1.2rem;
+  }
+  
+  .settingInput {
+    padding: 16px 24px;
+  }
+  
+  .settingInput input {
+    font-size: 1.1rem;
+  }
+  
+  .formsettingButton {
+    height: 60px;
+    font-size: 1.2rem;
+  }
+  
+  .dangerZone {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px;
+  }
+  
+  .dangerZone h2 {
+    font-size: 1.5rem;
+  }
+  
+  .deleteInfo div h3 {
+    font-size: 1.3rem;
+  }
+  
+  .deleteButton {
+    height: 60px;
+    font-size: 1.2rem;
+    padding: 0 40px;
   }
 }

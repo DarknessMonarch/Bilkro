@@ -10,13 +10,11 @@ import LogoImg from "@/public/assets/logo.png";
 import styles from "@/app/styles/auth.module.css";
 import { MdOutlineEmail as EmailIcon } from "react-icons/md";
 
-export default function SignUp() {
+export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const requestPasswordReset = useAuthStore(
-    (state) => state.requestPasswordReset
-  );
+  const { requestPasswordReset } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,9 +27,10 @@ export default function SignUp() {
 
     try {
       const result = await requestPasswordReset(email);
-
+      
       if (result.success) {
         toast.success(result.message);
+        router.push("/reset", { scroll: false });
       } else {
         toast.error(result.message);
       }
@@ -44,7 +43,6 @@ export default function SignUp() {
 
   return (
     <div className={styles.authComponent}>
- 
       <div className={styles.authWrapper}>
         <form onSubmit={handleSubmit} className={styles.formContainer}>
           <div className={styles.formLogo}>
@@ -87,8 +85,6 @@ export default function SignUp() {
           >
             {isLoading ? <Loader /> : "Request code"}
           </button>
-
-        
         </form>
       </div>
     </div>

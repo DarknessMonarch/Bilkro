@@ -12,7 +12,7 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      border: 2px solid var(--primary-color);
+      border: 2px solid var(--background-color);
       position: absolute;
       left: 0;
       top: 0;

@@ -1,4 +1,5 @@
 "use client";
+
 import { toast } from 'sonner';
 import Image from "next/image";
 import { useState } from "react";
@@ -19,6 +20,7 @@ export default function Verify() {
     e.preventDefault();
 
     if (!verificationCode || verificationCode.length !== 6) {
+      toast.error("Please enter a valid 6-digit verification code");
       return;
     }
 
@@ -29,13 +31,13 @@ export default function Verify() {
 
       if (result.success) {
         toast.success(result.message);
-        router.push("/page/football");
+        router.push("/page/inventory", { scroll: false });
       } else {
         toast.error(result.message);
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Verification failed");
+      toast.error("Verification failed");
     } finally {
       setIsLoading(false);
     }

@@ -8,7 +8,7 @@ import Loader from "@/app/components/StateLoader";
 import styles from "@/app/styles/auth.module.css";
 import { useState, useEffect, useRef } from "react";
 import { BsCameraFill as CameraIcon } from "react-icons/bs";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   FiEye as ShowPasswordIcon,
@@ -24,31 +24,18 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [IdImage, setIdImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
   const [terms, setTerms] = useState(false);  
   const fileInputRef = useRef(null);
   const { register } = useAuthStore();
-  const dropdownRef = useRef(null);
   const router = useRouter();
   
-
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
@@ -63,12 +50,14 @@ export default function SignUp() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      const imageUrl = URL.createObjectURL(file);
-      setIdImage(imageUrl);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -113,8 +102,8 @@ export default function SignUp() {
         password: formData.password,
       };
 
-      if (referral) {
-        userData.referredBy = referral;
+      if (profileImage) {
+        userData.profileImage = profileImage;
       }
 
       const result = await register(userData);
@@ -126,7 +115,7 @@ export default function SignUp() {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +229,7 @@ export default function SignUp() {
               style={{ display: "none" }}
             />
             <div className={styles.profileSection}>
-              {IdImage === null ? (
+              {profileImage === null ? (
                 <div
                   className={styles.uploadCameraIcon}
                   onClick={handleIconClick}
@@ -255,8 +244,8 @@ export default function SignUp() {
                 </div>
               ) : (
                 <Image
-                  src={IdImage}
-                  alt="Id Image"
+                  src={profileImage}
+                  alt="Profile Image"
                   className={styles.IdImage}
                   layout="fill"
                   quality={100}
@@ -268,6 +257,7 @@ export default function SignUp() {
           </div>
 
           <div className={styles.termsContainer}>
+            <div className={styles.termsCheckbox}>
             <input
               type="checkbox"
               id="terms"
@@ -275,12 +265,12 @@ export default function SignUp() {
               onChange={(e) => setTerms(e.target.checked)}
               required
             />
-            <label
-              // onClick={() => router.push("/page/terms", { scroll: false })}
-              htmlFor="terms"
-            >
+            <label htmlFor="terms">
               Accept terms and conditions
             </label>
+            </div>
+          
+          
           </div>
 
           <button

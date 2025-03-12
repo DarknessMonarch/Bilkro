@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/Auth";
 import Loader from "@/app/components/StateLoader";
@@ -26,7 +26,6 @@ export default function Reset({ params }) {
 
   const router = useRouter();
   const { resetPassword } = useAuthStore();
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -79,7 +78,6 @@ export default function Reset({ params }) {
 
   return (
     <div className={styles.authComponent}>
-   
       <div className={styles.authWrapper}>
         <form onSubmit={onSubmit} className={styles.formContainer}>
           <div className={styles.formLogo}>

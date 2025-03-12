@@ -3,65 +3,35 @@
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/Auth";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Loader from "@/app/components/StateLoader";
 import LogoImg from "@/public/assets/logo.png";
 import styles from "@/app/styles/auth.module.css";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import {
   FiEye as ShowPasswordIcon,
   FiEyeOff as HidePasswordIcon,
 } from "react-icons/fi";
-import { FaRegUser as UserNameIcon } from "react-icons/fa6";
 import {
   MdOutlineVpnKey as PasswordIcon,
   MdOutlineEmail as EmailIcon,
 } from "react-icons/md";
 
-export default function SignUp() {
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [referral, setReferral] = useState(null);
-  const [terms, setTerms] = useState(false);
-  const searchParams = useSearchParams();
-  const { register } = useAuthStore();
-  const dropdownRef = useRef(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const { login } = useAuthStore();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
-    country: "",
-    confirmPassword: "",
   });
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const referralParam = searchParams.get("referral");
-    if (referralParam) {
-      setReferral(referralParam);
-    }
-  }, [searchParams]);
-
-  const togglePasswordVisibility = (field) => {
-    if (field === "password") {
-      setShowPassword(!showPassword);
-    } else {
-      setShowConfirmPassword(!showConfirmPassword);
-    }
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleInputChange = (e) => {
@@ -72,58 +42,28 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.username.trim()) {
-      toast.error("Username is required");
-      return;
-    }
     if (!formData.email.trim()) {
       toast.error("Email is required");
-      return;
-    }
-    if (!formData.country) {
-      toast.error("Country is required");
       return;
     }
     if (!formData.password) {
       toast.error("Password is required");
       return;
     }
-    if (!formData.confirmPassword) {
-      toast.error("Please confirm your password");
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    if (!terms) {
-      toast.error("Please accept the terms and conditions");
-      return;
-    }
+    
     setIsLoading(true);
 
     try {
-      const userData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        country: formData.country,
-      };
-
-      if (referral) {
-        userData.referredBy = referral;
-      }
-
-      const result = await register(userData);
+      const result = await login(formData.email, formData.password);
 
       if (result.success) {
-        toast.success(result.message);
-        router.push("verification", { scroll: false });
+        toast.success(result.message || "Login successful");
+        router.push("/page/inventory", { scroll: false });
       } else {
-        toast.error(result.message);
+        toast.error(result.message || "Login failed");
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -143,20 +83,8 @@ export default function SignUp() {
             />
           </div>
           <div className={styles.formHeader}>
-            <h1>Create an account</h1>
-            <p>Please enter your details to sign up</p>
-          </div>
-          <div className={styles.authInput}>
-            <UserNameIcon className={styles.authIcon} />
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              placeholder="Enter your username"
-              required
-            />
+            <h1>Login</h1>
+            <p>Please enter your details to sign in</p>
           </div>
           <div className={styles.authInput}>
             <EmailIcon className={styles.authIcon} />
@@ -184,32 +112,9 @@ export default function SignUp() {
             <button
               type="button"
               className={styles.showBtn}
-              onClick={() => togglePasswordVisibility("password")}
+              onClick={togglePasswordVisibility}
             >
               {showPassword ? (
-                <ShowPasswordIcon className={styles.authIcon} />
-              ) : (
-                <HidePasswordIcon className={styles.authIcon} />
-              )}
-            </button>
-          </div>
-          <div className={styles.authInput}>
-            <PasswordIcon className={styles.authIcon} />
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              placeholder="••••••••"
-              required
-            />
-            <button
-              type="button"
-              className={styles.showBtn}
-              onClick={() => togglePasswordVisibility("confirmPassword")}
-            >
-              {showConfirmPassword ? (
                 <ShowPasswordIcon className={styles.authIcon} />
               ) : (
                 <HidePasswordIcon className={styles.authIcon} />
@@ -220,22 +125,16 @@ export default function SignUp() {
             <div className={styles.terms}>
               <input
                 type="checkbox"
-                id="terms"
-                checked={terms}
-                onChange={(e) => setTerms(e.target.checked)}
-                required
+                id="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
               />
-              <label
-                // onClick={() => router.push("/page/terms", { scroll: false })}
-                htmlFor="terms"
-              >
-                I accept Terms & Conditions
-              </label>
+              <label htmlFor="remember">Remember me</label>
             </div>
 
             <div
               className={styles.forgotPassword}
-              onClick={() => router.push("resetcode")}
+              onClick={() => router.push("resetcode", { scroll: false })}
             >
               <span>Forgot password</span>
             </div>
@@ -255,7 +154,7 @@ export default function SignUp() {
               className={styles.signupLink}
               onClick={() => router.push("signup", { scroll: false })}
             >
-              Signup
+              Sign up
             </span>
           </div>
         </form>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdOutlineEdit as EditIcon } from "react-icons/md";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -12,69 +12,39 @@ import {
 } from "react-icons/io";
 import { FiDownload as DownloadIcon } from "react-icons/fi";
 import { BsCartPlus as CartIcon } from "react-icons/bs";
+import { useProductStore } from "@/app/store/Product";
+import { useCartStore } from "@/app/store/Cart"; 
 import styles from "@/app/styles/singleProductCard.module.css";
 
-export default function Inventory() {
+export default function ProductDetail() {
   const router = useRouter();
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const productsData = [
-    {
-      _id: "1",
-      image: "https://iili.io/3fTdjLb.jpg",
-      name: "Tires",
-      productID: "WH-123",
-      category: "tires",
-      buyingPrice: 50,
-      sellingPrice: 80,
-      quantity: 100,
-      unit: "pcs",
-      supplierName: "Tech Suppliers Ltd.",
-      supplierContact: "techsuppliers@example.com",
-      reorderLevel: 10,
-      maxStock: 200,
-      qrCode: "https://i.postimg.cc/nrhgf11z/Screenshot-2025-03-09-081740.png",
-      expiryDate: null,
-      storageLocation: "Aisle 5, Shelf 3",
-      description: "High-quality rubber tires for vehicles.",
-      weight: "10kg",
-      color: "Black",
-    },
-    {
-      _id: "2",
-      image: "https://iili.io/3fTdjLb.jpg",
-      name: "Brakes",
-      productID: "BK-456",
-      category: "brakes",
-      buyingPrice: 70,
-      sellingPrice: 120,
-      quantity: 50,
-      unit: "pcs",
-      supplierName: "Auto Parts Ltd.",
-      supplierContact: "autoparts@example.com",
-      reorderLevel: 5,
-      maxStock: 100,
-      qrCode: "https://i.postimg.cc/nrhgf11z/Screenshot-2025-03-09-081740.png",
-      storageLocation: "Aisle 2, Shelf 1",
-      description: "Durable disc brakes for modern vehicles.",
-      warranty: "2 years",
-    },
-  ];
+  // Get product data and functions from the store
+  const { singleProduct, loading, error, getProductById } = useProductStore();
 
-  const product = productsData.find((item) => item._id === slug);
+  // Get cart functions from the cart store
+  const { addToCart, loading: cartLoading } = useCartStore();
+
+  // Fetch product data when component mounts
+  useEffect(() => {
+    if (slug) {
+      getProductById(slug);
+    }
+  }, [slug, getProductById]);
 
   const editProduct = () => router.push(`edit/${slug}`);
   const goBack = () => router.back();
 
   const downloadQRCode = () => {
-    if (!product.qrCode) return;
+    if (!singleProduct?.qrCode) return;
 
     const link = document.createElement("a");
-    link.href = product.qrCode;
-    link.download = `${product.name.replace(/\s+/g, "-")}_${
-      product.productID
+    link.href = singleProduct.qrCode;
+    link.download = `${singleProduct.name.replace(/\s+/g, "-")}_${
+      singleProduct.productID
     }_QRCode.png`;
 
     document.body.appendChild(link);
@@ -82,37 +52,91 @@ export default function Inventory() {
     document.body.removeChild(link);
   };
 
-  const addToCart = () => {
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingProductIndex = existingCart.findIndex(
-      (item) => item.productID === product.productID
-    );
+  const handleAddToCart = async () => {
+    try {
+      if (!singleProduct?._id) {
+        toast.error("Product not found");
+        return;
+      }
 
-    if (existingProductIndex > -1) {
-      existingCart[existingProductIndex].quantity += quantity;
-    } else {
-      existingCart.push({
-        _id: product._id,
-        productID: product.productID,
-        name: product.name,
-        price: product.sellingPrice,
-        image: product.image,
-        quantity: quantity,
-        unit: product.unit || "pcs",
-      });
+      const result = await addToCart(singleProduct._id, quantity);
+
+      if (result.success) {
+        setAddedToCart(true);
+        toast.success("Product added to cart");
+
+        setTimeout(() => {
+          setAddedToCart(false);
+        }, 3000);
+      } else {
+        toast.error(result.message || "Failed to add product to cart");
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred");
     }
-
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-
-    setAddedToCart(true);
-    toast.success("Product added to cart");
-
-    setTimeout(() => {
-      setAddedToCart(false);
-    }, 3000);
   };
 
-  if (product.quantity === 0) {
+  // Show loading state
+  if (loading) {
+    return (
+      <div className={styles.mainContent}>
+        <div className={styles.singleBtnContainer}>
+          <button onClick={goBack} className={styles.backButton}>
+            <BackArrow
+              className={styles.backButtonIcon}
+              aria-label="back icon"
+              alt="back icon"
+            />
+            <span>Go Back</span>
+          </button>
+        </div>
+        <div className={styles.content}>
+          <div className={`${styles.cardImage} skeleton`}></div>
+          <div className={styles.cardBottom}>
+            <div className={styles.productDetails}>
+              {Array(5)
+                .fill(0)
+                .map((_, index) => (
+                  <div
+                    className={`${styles.productDetailsInfo} skeleton`}
+                    key={index}
+                  >
+                    <div className="skeleton-text"></div>
+                    <div className="skeleton-text"></div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !singleProduct) {
+    return (
+      <div className={styles.mainContent}>
+        <div className={styles.singleBtnContainer}>
+          <button onClick={goBack} className={styles.backButton}>
+            <BackArrow
+              className={styles.backButtonIcon}
+              aria-label="back icon"
+              alt="back icon"
+            />
+            <span>Go Back</span>
+          </button>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.errorContainer}>
+            <h2>Error loading product</h2>
+            <p>{error || "Product not found"}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (singleProduct.quantity === 0) {
     toast.error("Product is out of stock");
   }
 
@@ -123,7 +147,7 @@ export default function Inventory() {
     {
       label: "Quantity",
       key: "quantity",
-      format: (val) => `${val} ${product.unit || ""}`,
+      format: (val) => `${val} ${singleProduct.unit || ""}`,
     },
     { label: "Supplier", key: "supplierName" },
     { label: "Supplier Contact", key: "supplierContact" },
@@ -160,15 +184,15 @@ export default function Inventory() {
         <div className={styles.cardImage}>
           <Image
             className={styles.productImage}
-            src={product.image}
-            alt={product.name}
+            src={singleProduct.image}
+            alt={singleProduct.name}
             fill
             sizes="100%"
-            objectFit="contain"
+            objectFit="cover"
             priority={true}
           />
           <div className={styles.productName}>
-            <h2>{product.name}</h2>
+            <h2>{singleProduct.name}</h2>
           </div>
           <div className={styles.addToCartSection}>
             <div className={styles.quantityControls}>
@@ -185,12 +209,12 @@ export default function Inventory() {
               <input
                 type="text"
                 min="1"
-                max={product.quantity}
+                max={singleProduct.quantity}
                 value={quantity}
                 onChange={(e) =>
                   setQuantity(
                     Math.min(
-                      product.quantity,
+                      singleProduct.quantity,
                       Math.max(1, parseInt(e.target.value) || 1)
                     )
                   )
@@ -199,7 +223,9 @@ export default function Inventory() {
               />
               <button
                 onClick={() =>
-                  setQuantity((prev) => Math.min(product.quantity, prev + 1))
+                  setQuantity((prev) =>
+                    Math.min(singleProduct.quantity, prev + 1)
+                  )
                 }
                 className={styles.quantityBtn}
               >
@@ -211,15 +237,16 @@ export default function Inventory() {
               </button>
             </div>
             <button
-              onClick={addToCart}
+              onClick={handleAddToCart}
               className={styles.backButton}
-              disabled={product.quantity <= 0}
+              disabled={singleProduct.quantity <= 0 || cartLoading}
             >
               <CartIcon
                 className={styles.backButtonIcon}
                 aria-label="cart icon"
                 alt="cart icon"
               />
+              {cartLoading && <span className={styles.loadingSpinner}></span>}
             </button>
           </div>
         </div>
@@ -227,39 +254,37 @@ export default function Inventory() {
         <div className={styles.cardBottom}>
           <div className={styles.productDetails}>
             {standardFields.map(({ label, key, format }) =>
-              product[key] ? (
+              singleProduct[key] ? (
                 <div className={styles.productDetailsInfo} key={key}>
                   <h1>{label}</h1>
-                  <span>{format ? format(product[key]) : product[key]}</span>
+                  <span>
+                    {format ? format(singleProduct[key]) : singleProduct[key]}
+                  </span>
                 </div>
               ) : null
             )}
 
-            {Object.entries(product).map(([key, value]) => {
-              if (
-                standardFields.some((field) => field.key === key) ||
-                ["_id", "image", "qrCode", "unit"].includes(key)
-              ) {
-                return null;
-              }
-
-              return (
-                <div className={styles.productDetailsInfo} key={key}>
-                  <h1>
-                    {key
-                      .replace(/([A-Z])/g, " $1")
-                      .replace(/^./, (str) => str.toUpperCase())}
-                  </h1>
-                  <span>{value}</span>
+            {singleProduct.customFields &&
+              singleProduct.customFields.length > 0 && (
+                <div className={styles.productDetails}>
+                  {singleProduct.customFields.map((field) => (
+                    <div className={styles.productDetailsInfo} key={field._id}>
+                      <h1>
+                        {field.key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase())}
+                      </h1>
+                      <span>{field.value}</span>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
+              )}
           </div>
-          {product.qrCode && (
+          {singleProduct.qrCode && (
             <div className={styles.qrCode}>
               <Image
-                src={product.qrCode}
-                alt={`QR Code for ${product.name}`}
+                src={singleProduct.qrCode}
+                alt={`QR Code for ${singleProduct.name}`}
                 width={100}
                 height={100}
                 className={styles.qrImage}

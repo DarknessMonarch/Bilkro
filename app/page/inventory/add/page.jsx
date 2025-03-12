@@ -2,14 +2,16 @@
 
 import { toast } from "sonner";
 import Image from "next/image";
+import { useAuthStore } from "@/app/store/Auth";
 import styles from "@/app/styles/form.module.css";
 import { useState, useRef, useEffect } from "react";
 import { IoAdd, IoClose } from "react-icons/io5";
+import { useProductStore } from "@/app/store/Product";
 import { CiSaveUp2 as SaveIcon } from "react-icons/ci";
 import { BsCameraFill as CameraIcon } from "react-icons/bs";
 import { IoIosArrowBack as BackArrow } from "react-icons/io";
-import FormDropdown from "@/app/components/Form/FormDropdown";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import FormDropdown from "@/app/components/FormDropdown";
+import { useRouter } from "next/navigation";
 
 const FileInput = ({ onChange, idImage, label, required }) => {
   const fileInputRef = useRef(null);
@@ -109,12 +111,11 @@ const prepareFormData = (formData, imageFile, customFields) => {
 
 export default function InventoryForm() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const formType = searchParams.get("form") || "Add";
-  const productId = searchParams.get("id");
-  const isEditMode = formType === "Edit";
-
+  
+  // Product store
+  const createProduct = useProductStore(state => state.createProduct);
+  const loading = useProductStore(state => state.loading);
+  const error = useProductStore(state => state.error);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -145,58 +146,14 @@ export default function InventoryForm() {
     expiryDate: "",
   });
 
-  // Fetch product data if in edit mode
+  const prevErrorRef = useRef(null);
+
   useEffect(() => {
-    if (isEditMode && productId) {
-      const mockProduct = {
-        _id: "1",
-        image: "https://iili.io/3fTdjLb.jpg",
-        name: "Tires",
-        productID: "WH-123",
-        category: "tires",
-        buyingPrice: 50,
-        sellingPrice: 80,
-        quantity: 100,
-        unit: "pcs",
-        supplierName: "Tech Suppliers Ltd.",
-        supplierContact: "techsuppliers@example.com",
-        reorderLevel: 10,
-        maxStock: 200,
-        qrCode:
-          "https://i.postimg.cc/nrhgf11z/Screenshot-2025-03-09-081740.png",
-        expiryDate: null,
-        storageLocation: "Aisle 5, Shelf 3",
-        description: "High-quality tires for all weather conditions.",
-        customFields: [
-          { key: "Manufacturer", value: "GoodYear" },
-          { key: "Size", value: "205/55R16" },
-        ],
-      };
-
-      setFormData({
-        name: mockProduct.name || "",
-        productID: mockProduct.productID || "",
-        category: mockProduct.category || "",
-        buyingPrice: mockProduct.buyingPrice?.toString() || "",
-        sellingPrice: mockProduct.sellingPrice?.toString() || "",
-        quantity: mockProduct.quantity?.toString() || "",
-        unit: mockProduct.unit || "pcs",
-        supplierName: mockProduct.supplierName || "",
-        supplierContact: mockProduct.supplierContact || "",
-        reorderLevel: mockProduct.reorderLevel?.toString() || "",
-        maxStock: mockProduct.maxStock?.toString() || "",
-        storageLocation: mockProduct.storageLocation || "",
-        description: mockProduct.description || "",
-        expiryDate: mockProduct.expiryDate || "",
-      });
-
-      setImageUrl(mockProduct.image || null);
-
-      if (mockProduct.customFields && Array.isArray(mockProduct.customFields)) {
-        setCustomFields(mockProduct.customFields);
-      }
+    if (error && error !== prevErrorRef.current) {
+      toast.error(error);
+      prevErrorRef.current = error;
     }
-  }, [isEditMode, productId]);
+  }, [error]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -272,26 +229,25 @@ export default function InventoryForm() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!isEditMode) {
-      const requiredFields = [
-        "name",
-        "productID",
-        "category",
-        "buyingPrice",
-        "sellingPrice",
-        "quantity",
-      ];
-      requiredFields.forEach((field) => {
-        if (!formData[field]) {
-          newErrors[field] = `${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          } is required`;
-        }
-      });
-
-      if (!imageFile && !imageUrl) {
-        newErrors.image = "Product image is required";
+    const requiredFields = [
+      "name",
+      "productID",
+      "category",
+      "buyingPrice",
+      "sellingPrice",
+      "quantity",
+    ];
+    
+    requiredFields.forEach((field) => {
+      if (!formData[field]) {
+        newErrors[field] = `${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } is required`;
       }
+    });
+
+    if (!imageFile && !imageUrl) {
+      newErrors.image = "Product image is required";
     }
 
     // Validate number fields
@@ -302,6 +258,7 @@ export default function InventoryForm() {
       "reorderLevel",
       "maxStock",
     ];
+    
     numberFields.forEach((field) => {
       if (formData[field] && isNaN(Number(formData[field]))) {
         newErrors[field] = `${
@@ -326,23 +283,19 @@ export default function InventoryForm() {
 
     try {
       const formDataObj = prepareFormData(formData, imageFile, customFields);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // In a real app, you would call your API here
-      // let result;
-      // if (isEditMode && productId) {
-      //   result = await updateProduct(productId, formDataObj);
-      // } else {
-      //   result = await createProduct(formDataObj);
-      // }
-
-      toast.success(`Product ${isEditMode ? "updated" : "added"} successfully`);
-      router.push("/inventory"); // Redirect to inventory page
-    } catch (error) {
-      console.error("Form submission error:", error);
-      toast.error(error.message || "Failed to submit product data");
+      
+      // Use the product store to create a product
+      const result = await createProduct(formDataObj);
+      
+      if (result.success) {
+        toast.success("Product added successfully");
+        router.push("inventory"); // Redirect to inventory page
+      } else {
+        toast.error(result.message || "Failed to add product");
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
+      toast.error(err.message || "Failed to submit product data");
     } finally {
       setIsLoading(false);
     }
@@ -361,15 +314,19 @@ export default function InventoryForm() {
               aria-label="back icon"
               alt="back icon"
             />
-            <span>go Back</span>
+            <span>Go Back</span>
           </button>
-          <button onClick={handleSubmit} className={styles.saveButton}>
+          <button 
+            onClick={handleSubmit} 
+            className={styles.saveButton}
+            disabled={loading || isLoading}
+          >
             <SaveIcon
               className={styles.saveButtonIcon}
               aria-label="save icon"
               alt="save icon"
             />
-            Save
+            {(loading || isLoading) ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -380,14 +337,16 @@ export default function InventoryForm() {
               onChange={handleImageUpload}
               idImage={imageUrl}
               label="Product Image"
-              required={!isEditMode}
+              required={true}
             />
+            {errors.image && (
+              <span className={styles.errorText}>{errors.image}</span>
+            )}
           </div>
 
           <div className={styles.formInputContainer}>
             <label>
-              Product Name{" "}
-              {!isEditMode && <span className={styles.required}>*</span>}
+              Product Name <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -398,7 +357,7 @@ export default function InventoryForm() {
               className={`${styles.inputField} ${
                 errors.name ? styles.errorInput : ""
               }`}
-              required={!isEditMode}
+              required={true}
             />
             {errors.name && (
               <span className={styles.errorText}>{errors.name}</span>
@@ -407,8 +366,7 @@ export default function InventoryForm() {
 
           <div className={styles.formInputContainer}>
             <label>
-              Product ID{" "}
-              {!isEditMode && <span className={styles.required}>*</span>}
+              Product ID <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
@@ -419,7 +377,7 @@ export default function InventoryForm() {
               className={`${styles.inputField} ${
                 errors.productID ? styles.errorInput : ""
               }`}
-              required={!isEditMode}
+              required={true}
             />
             {errors.productID && (
               <span className={styles.errorText}>{errors.productID}</span>
@@ -428,8 +386,7 @@ export default function InventoryForm() {
 
           <div className={styles.formInputContainer}>
             <label>
-              Category{" "}
-              {!isEditMode && <span className={styles.required}>*</span>}
+              Category <span className={styles.required}>*</span>
             </label>
             <FormDropdown
               options={categoryOptions}
@@ -449,8 +406,7 @@ export default function InventoryForm() {
           <div className={styles.formGridContainer}>
             <div className={styles.formInputContainer}>
               <label>
-                Buying Price{" "}
-                {!isEditMode && <span className={styles.required}>*</span>}
+                Buying Price <span className={styles.required}>*</span>
               </label>
               <input
                 type="number"
@@ -461,7 +417,7 @@ export default function InventoryForm() {
                 className={`${styles.inputField} ${
                   errors.buyingPrice ? styles.errorInput : ""
                 }`}
-                required={!isEditMode}
+                required={true}
                 min="0"
                 step="0.01"
               />
@@ -472,8 +428,7 @@ export default function InventoryForm() {
 
             <div className={styles.formInputContainer}>
               <label>
-                Selling Price{" "}
-                {!isEditMode && <span className={styles.required}>*</span>}
+                Selling Price <span className={styles.required}>*</span>
               </label>
               <input
                 type="number"
@@ -484,7 +439,7 @@ export default function InventoryForm() {
                 className={`${styles.inputField} ${
                   errors.sellingPrice ? styles.errorInput : ""
                 }`}
-                required={!isEditMode}
+                required={true}
                 min="0"
                 step="0.01"
               />
@@ -497,8 +452,7 @@ export default function InventoryForm() {
           <div className={styles.formGridContainer}>
             <div className={styles.formInputContainer}>
               <label>
-                Quantity{" "}
-                {!isEditMode && <span className={styles.required}>*</span>}
+                Quantity <span className={styles.required}>*</span>
               </label>
               <input
                 type="number"
@@ -509,7 +463,7 @@ export default function InventoryForm() {
                 className={`${styles.inputField} ${
                   errors.quantity ? styles.errorInput : ""
                 }`}
-                required={!isEditMode}
+                required={true}
                 min="0"
               />
               {errors.quantity && (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import Logo from "@/public/assets/logo.png";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/app/store/Auth";
 import { useDrawerStore } from "@/app/store/Drawer";
 import styles from "@/app/styles/sideNav.module.css";
@@ -17,12 +17,15 @@ import { TbReportAnalytics as ReportIcon } from "react-icons/tb";
 import { HiOutlineHome as DashboardIcon } from "react-icons/hi2";
 import { MdOutlineSettings as SettingsIcon } from "react-icons/md";
 import { MdOutlineInventory2 as InventoryIcon } from "react-icons/md";
+import Loading from "@/app/components/StateLoader";
 
 export default function SideNav() {
   const { isAuth, isAdmin, logout } = useAuthStore();
   const { isOpen, toggleOpen } = useDrawerStore();
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleResize = () => {
@@ -30,9 +33,7 @@ export default function SideNav() {
     };
 
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -45,50 +46,62 @@ export default function SideNav() {
   }`;
 
   const handleLogout = useCallback(async () => {
+    setIsLoading(true);
     try {
       const result = await logout();
       if (result.success) {
         toast.success(result.message);
+        router.push("/authentication/login");
       } else {
         toast.error(result.message);
       }
     } catch (error) {
       toast.error("Logout failed");
+    } finally {
+      setIsLoading(false);
     }
-  }, [logout]);
+  }, [logout, router]);
+
+  if (!isAuth) {
+    router.push("/authentication/login");
+  }
 
   return (
-    <div className={sidebarClasses}>
-      {isMobile && (
-        <div onClick={toggleOpen} className={styles.toggleMenuButton}>
-          <div className={styles.closeIconBtn}>
-            <CloseIcon
-              className={styles.toggleMenuIcon}
-              aria-label="Toggle menu"
-              alt="toggle menu icon"
-            />
-          </div>
-          <Image
-            src={Logo}
-            height={35}
-            alt="logo"
-            priority
-            className={styles.logo}
-          />
-        </div>
-      )}
-      <div className={styles.sideTop}>
-        {!isMobile && (
-          <div>
+    <>
+      {isLoading && <Loading />}
+      <div className={sidebarClasses}>
+        {isMobile && (
+          <div onClick={toggleOpen} className={styles.toggleMenuButton}>
+            <div className={styles.closeIconBtn}>
+              <CloseIcon
+                className={styles.toggleMenuIcon}
+                aria-label="Toggle menu"
+                alt="toggle menu icon"
+              />
+            </div>
             <Image
               src={Logo}
               height={35}
+              width={150}
               alt="logo"
               priority
-              className={styles.sideTopLogo}
+              className={styles.logo}
             />
           </div>
         )}
+        <div className={styles.sideTop}>
+          {!isMobile && (
+            <div>
+              <Image
+                src={Logo}
+                height={35}
+                width={150}
+                alt="logo"
+                priority
+                className={styles.sideTopLogo}
+              />
+            </div>
+          )}
 
           <Link
             href="/page/dashboard/?card=revenue"
@@ -110,70 +123,54 @@ export default function SideNav() {
               <h1>Dashboard</h1>
             </div>
           </Link>
-        <Link href="/page/inventory" className={styles.sideLink}>
-          <div
-            className={`${styles.innerSideLink} ${
-              pathname === "/page/inventory" ||
-              pathname.startsWith("/page/inventory/")
-                ? styles.activeLink
-                : ""
-            }`}
-          >
-            <InventoryIcon
-              alt="inventory icon"
-              aria-label="inventory icon"
-              className={styles.linkIcon}
-            />
-            <h1>Inventory</h1>
-          </div>
-        </Link>
-        <Link href="/page/reports" className={styles.sideLink}>
-          <div
-            className={`${styles.innerSideLink} ${
-              pathname === "/page/reports" ||
-              pathname.startsWith("/page/reports/")
-                ? styles.activeLink
-                : ""
-            }`}
-          >
-            <ReportIcon
-              alt="reports icon"
-              aria-label="reports icon"
-              className={styles.linkIcon}
-            />
-            <h1>Reports</h1>
-          </div>
-        </Link>
+          <Link href="/page/inventory" className={styles.sideLink}>
+            <div
+              className={`${styles.innerSideLink} ${
+                pathname === "/page/inventory" ||
+                pathname.startsWith("/page/inventory/")
+                  ? styles.activeLink
+                  : ""
+              }`}
+            >
+              <InventoryIcon
+                alt="inventory icon"
+                aria-label="inventory icon"
+                className={styles.linkIcon}
+              />
+              <h1>Inventory</h1>
+            </div>
+          </Link>
+          <Link href="/page/reports" className={styles.sideLink}>
+            <div
+              className={`${styles.innerSideLink} ${
+                pathname === "/page/reports" ||
+                pathname.startsWith("/page/reports/")
+                  ? styles.activeLink
+                  : ""
+              }`}
+            >
+              <ReportIcon
+                alt="reports icon"
+                aria-label="reports icon"
+                className={styles.linkIcon}
+              />
+              <h1>Reports</h1>
+            </div>
+          </Link>
 
-        <Link href="/page/cart" className={styles.sideLink}>
-          <div
-            className={`${styles.innerSideLink} ${
-              pathname === "/page/cart" || pathname.startsWith("/page/cart/")
-                ? styles.activeLink
-                : ""
-            }`}
-          >
-            <CartIcon alt="cart icon" className={styles.linkIcon} />
-            <h1>Cart</h1>
-          </div>
-        </Link>
-        <Link href="/page/sales" className={styles.sideLink}>
-          <div
-            className={`${styles.innerSideLink} ${
-              pathname === "/page/sales" || pathname.startsWith("/page/sales/")
-                ? styles.activeLink
-                : ""
-            }`}
-          >
-            <SalesIcon
-              alt="sales icon"
-              aria-label="sales icon"
-              className={styles.linkIcon}
-            />
-            <h1>Sales</h1>
-          </div>
-        </Link>
-      </div>
+          <Link href="/page/cart" className={styles.sideLink}>
+            <div
+              className={`${styles.innerSideLink} ${
+                pathname === "/page/cart" || pathname.startsWith("/page/cart/")
+                  ? styles.activeLink
+                  : ""
+              }`}
+            >
+              <CartIcon alt="cart icon" className={styles.linkIcon} />
+              <h1>Cart</h1>
+            </div>
+          </Link>
+        </div>
         <div className={styles.sideBottomContainer}>
           <Link href="/page/settings" className={styles.sideLink}>
             <div
@@ -189,7 +186,7 @@ export default function SideNav() {
                 aria-label="settings icon"
                 className={styles.linkIcon}
               />
-              <h1>settings</h1>
+              <h1>Settings</h1>
             </div>
           </Link>
           <div
@@ -204,6 +201,7 @@ export default function SideNav() {
             <h1>Logout</h1>
           </div>
         </div>
-    </div>
+      </div>
+    </>
   );
 }

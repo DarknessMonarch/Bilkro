@@ -18,12 +18,15 @@ export default function ProductCard({
   qrCode,
   unit,
   productID,
+  onClick,
+  onAddToCart,
+  isAddingToCart = false
 }) {
   const router = useRouter();
   const [orderQuantity, setOrderQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const addToCart = (e) => {
+  const handleAddToCart = (e) => {
     e.stopPropagation();
 
     if (quantity <= 0) {
@@ -31,37 +34,55 @@ export default function ProductCard({
       return;
     }
 
-    const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingProductIndex = existingCart.findIndex(
-      (item) => item.productID === productID
-    );
-
-    if (existingProductIndex > -1) {
-      existingCart[existingProductIndex].quantity += orderQuantity;
+    // Use the cart store function if provided, otherwise use local fallback
+    if (onAddToCart) {
+      onAddToCart(_id, orderQuantity);
+      
+      // Set UI feedback state
+      setAddedToCart(true);
+      
+      // Reset added state after animation completes
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 3000);
     } else {
-      existingCart.push({
-        _id: _id,
-        productID: productID,
-        name: name,
-        price: sellingPrice,
-        image: image,
-        quantity: orderQuantity,
-        unit: unit || "pcs",
-      });
+      // Fallback to local storage approach (keeping for backward compatibility)
+      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const existingProductIndex = existingCart.findIndex(
+        (item) => item.productID === productID
+      );
+
+      if (existingProductIndex > -1) {
+        existingCart[existingProductIndex].quantity += orderQuantity;
+      } else {
+        existingCart.push({
+          _id: _id,
+          productID: productID,
+          name: name,
+          price: sellingPrice,
+          image: image,
+          quantity: orderQuantity,
+          unit: unit || "pcs",
+        });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(existingCart));
+
+      setAddedToCart(true);
+      toast.success("Product added to cart");
+
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 3000);
     }
-
-    localStorage.setItem("cart", JSON.stringify(existingCart));
-
-    setAddedToCart(true);
-    toast.success("Product added to cart");
-
-    setTimeout(() => {
-      setAddedToCart(false);
-    }, 3000);
   };
 
   const openProduct = () => {
-    router.push(`inventory/${_id}`);
+    if (onClick) {
+      onClick();
+    } else {
+      router.push(`inventory/${_id}`);
+    }
   };
 
   const handleQuantityChange = (e) => {
@@ -89,7 +110,7 @@ export default function ProductCard({
           alt="Product Image"
           fill
           sizes="100%"
-          objectFit="contain"
+          objectFit="cover"
           priority={true}
         />
         <span>${sellingPrice}</span>
@@ -134,15 +155,19 @@ export default function ProductCard({
               </button>
             </div>
             <button
-              onClick={addToCart}
-              className={styles.cartButton}
-              disabled={quantity <= 0}
+              onClick={handleAddToCart}
+              className={`${styles.cartButton} ${isAddingToCart ? styles.loading : ''}`}
+              disabled={quantity <= 0 || isAddingToCart}
             >
-              <CartIcon
-                className={styles.cartIcon}
-                aria-label="cart icon"
-                alt="cart icon"
-              />
+              {isAddingToCart ? (
+                <span className={styles.spinner}></span>
+              ) : (
+                <CartIcon
+                  className={styles.cartIcon}
+                  aria-label="cart icon"
+                  alt="cart icon"
+                />
+              )}
             </button>
           </div>
         </div>

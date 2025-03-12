@@ -204,6 +204,18 @@
     font-size: 0.8rem;
   }
 
+  .termsCheckbox {
+    gap: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .termsCheckbox label {
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    font-family: var(--font-outfit-light);
+  }
+
   .formAuthButton {
     gap: 10px;
     width: 100%;
