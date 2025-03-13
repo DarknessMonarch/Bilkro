@@ -5,6 +5,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { BsCartPlus as CartIcon } from "react-icons/bs";
 import { FaTrashAlt as DeleteIcon } from "react-icons/fa";
+import { FaSync as ResetIcon } from "react-icons/fa";
 import styles from "@/app/styles/dashboard.module.css";
 import { useDashboardStore } from "@/app/store/Dashboard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -14,10 +15,12 @@ export default function Dashboard() {
     loading, 
     error, 
     dashboardData, 
-    fetchDashboardData
+    fetchDashboardData,
+    resetDashboardData
   } = useDashboardStore();
   
   const [activeTab, setActiveTab] = useState('top-selling');
+  const [isResetting, setIsResetting] = useState(false);
   
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -41,6 +44,51 @@ export default function Dashboard() {
   const handleRestock = async (productId) => {
     toast.success(`Added product #${productId} to restock list`);
     // This would typically add the product to the cart or a restock queue
+  };
+  
+  // Handle dashboard reset
+  const handleResetDashboard = async () => {
+    try {
+      setIsResetting(true);
+      const confirmReset = window.confirm("Are you sure you want to reset dashboard data? This will clear all reports from the current month.");
+      
+      if (confirmReset) {
+        const result = await resetDashboardData();
+        
+        if (result.success) {
+          toast.success(`Dashboard reset successfully. ${result.deletedReports} reports deleted.`);
+          // Refresh dashboard data after reset
+          await fetchDashboardData();
+        } else {
+          toast.error("Failed to reset dashboard data");
+        }
+      }
+    } catch (err) {
+      toast.error("Error resetting dashboard: " + (err.message || "Unknown error"));
+    } finally {
+      setIsResetting(false);
+    }
+  };
+  
+  // Handle data export
+  const handleExportData = async () => {
+    try {
+      // This would require the useReportStore to handle exports
+      const { exportSalesReports } = await import("@/app/store/Report").then(
+        (module) => module.useReportStore.getState()
+      );
+      
+      const result = await exportSalesReports({
+        period: 'monthly',
+        format: 'csv'
+      });
+      
+      if (!result.success) {
+        toast.error("Failed to export dashboard data");
+      }
+    } catch (err) {
+      toast.error("Error exporting data: " + (err.message || "Unknown error"));
+    }
   };
   
   // Display loading state
@@ -89,9 +137,18 @@ export default function Dashboard() {
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
         <h1>Dashboard</h1>
-        <div className={styles.dateSelector}>
-          <span>{data.date}</span>
-          <button className={styles.dropdownButton}>▼</button>
+        <div className={styles.headerActions}>
+          <div className={styles.dateSelector}>
+            <span>{data.date}</span>
+            <button className={styles.dropdownButton}>▼</button>
+          </div>
+          <button 
+            className={styles.resetButton}
+            onClick={handleResetDashboard}
+            disabled={isResetting}
+          >
+            <ResetIcon /> {isResetting ? 'Resetting...' : 'Reset Dashboard'}
+          </button>
         </div>
       </div>
       
@@ -246,7 +303,9 @@ export default function Dashboard() {
             Out of Stock Products
           </button>
           
-          <button className={styles.exportButton}>Export <span>↑</span></button>
+          <button className={styles.exportButton} onClick={handleExportData}>
+            Export <span>↑</span>
+          </button>
         </div>
         
         <div className={styles.tableContent}>

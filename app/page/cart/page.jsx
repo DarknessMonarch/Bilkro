@@ -9,6 +9,7 @@ import { FaTrashAlt as DeleteIcon } from "react-icons/fa";
 import { useCartStore } from "@/app/store/Cart";
 import { useProductStore } from "@/app/store/Product";
 import { toast } from "sonner";
+import { CheckoutReceipt } from "@/app/components/Reciept"; 
 
 const itemsPerPage = 7;
 
@@ -23,6 +24,10 @@ export default function CartPage() {
     phone: "",
     address: ""
   });
+  
+  // Add these new states for receipt handling
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [orderData, setOrderData] = useState(null);
   
   const { 
     cart, 
@@ -108,8 +113,27 @@ export default function CartPage() {
       const result = await checkout(paymentMethod, customerInfo);
       
       if (result.success) {
+        // Format the order data for the receipt
+        const orderDetails = {
+          reportId: result.orderId || `ORD-${Date.now().toString().slice(-6)}`,
+          items: cart.items.map(item => ({
+            name: item.name,
+            productID: item._id,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.image,
+            unit: item.unit || "pcs"
+          })),
+          subtotal: cart.subtotal,
+          discount: cart.discount,
+          total: cart.total
+        };
+        
+        // Update state to show receipt
+        setOrderData(orderDetails);
+        setShowReceipt(true);
+        
         toast.success("Checkout completed successfully!");
-        router.push(`inventory`);
       } else {
         // Handle unavailable items
         if (result.unavailableItems && result.unavailableItems.length > 0) {
@@ -128,6 +152,12 @@ export default function CartPage() {
     }
   };
 
+  // Close receipt handler
+  const handleCloseReceipt = () => {
+    setShowReceipt(false);
+    router.push('/page/inventory');
+  };
+
   // Calculate pagination
   const cartItems = cart?.items || [];
   const totalItems = cartItems.length;
@@ -144,6 +174,15 @@ export default function CartPage() {
   const subtotal = cart?.subtotal || 0;
   const discount = cart?.discount || 0;
   const total = cart?.total || 0;
+
+  // First, check if we should display the receipt
+  if (showReceipt && orderData) {
+    return <CheckoutReceipt 
+      orderData={orderData} 
+      customerInfo={{...customerInfo, paymentMethod}} 
+      onClose={handleCloseReceipt} 
+    />;
+  }
 
   if (showCheckout) {
     return (

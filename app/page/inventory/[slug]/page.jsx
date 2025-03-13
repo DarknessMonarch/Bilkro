@@ -4,6 +4,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { MdOutlineEdit as EditIcon } from "react-icons/md";
+import { RiDeleteBinLine as DeleteIcon } from "react-icons/ri";
 import { useParams, useRouter } from "next/navigation";
 import {
   IoIosArrowBack as BackArrow,
@@ -21,9 +22,10 @@ export default function ProductDetail() {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Get product data and functions from the store
-  const { singleProduct, loading, error, getProductById } = useProductStore();
+  const { singleProduct, loading, error, getProductById, deleteProduct } = useProductStore();
 
   // Get cart functions from the cart store
   const { addToCart, loading: cartLoading } = useCartStore();
@@ -37,6 +39,34 @@ export default function ProductDetail() {
 
   const editProduct = () => router.push(`edit/${slug}`);
   const goBack = () => router.back();
+
+  const handleDeleteProduct = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${singleProduct.name}?`)) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      
+      if (!singleProduct?._id) {
+        toast.error("Product not found");
+        return;
+      }
+
+      const result = await deleteProduct(singleProduct._id);
+
+      if (result.success) {
+        toast.success("Product deleted successfully");
+        router.push("/page/inventory"); // Redirect to inventory page
+      } else {
+        toast.error(result.message || "Failed to delete product");
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred while deleting");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const downloadQRCode = () => {
     if (!singleProduct?.qrCode) return;
@@ -177,6 +207,17 @@ export default function ProductDetail() {
             alt="edit icon"
           />
           <span>Edit</span>
+        </button>
+        <button 
+          className={`${styles.inventoryNavBtn} ${styles.deleteBtn}`} 
+          onClick={handleDeleteProduct}
+          disabled={isDeleting}
+        >
+          <DeleteIcon
+            className={styles.deleteIcon}
+            aria-label="delete icon"
+            alt="delete icon"
+          />
         </button>
       </div>
 

@@ -168,6 +168,21 @@
     background-color: var(--tertiary-color-light);
   }
 
+  .deleteBtn {
+    background-color: var(--return-color);
+    border: 1px solid var(--return-color);
+  }
+  
+  .deleteBtn:hover {
+    border: 1px solid var(--return-color-light);
+    background-color: var(--return-color-light);
+  }
+  
+  .deleteIcon {
+    color: var(--background-color);
+
+  }
+
   .quantityIcon {
     font-size: 20px;
     color: var(--tertiary-color);

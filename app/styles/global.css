@@ -1,12 +1,13 @@
 @media screen {
   * {
     /* dynamic style */
-    --return-color: #ff6b6b;
+    --return-color: #f73535;
     --primary-color: #383E49;
     --tertiary-color: #1366D9;
     --recieved-color: #e19133;
     --secondary-color: #00eda1;
     --background-color: #ffffff;
+    --return-color-light: #ff6b6b;
     --primary-light-color: #909299;
     --tertiary-color-light: #327de6;
     --background-color-dark:#f8f7f7;

@@ -316,6 +316,193 @@ export const useReportStore = create(
         }
       },
       
+      // Delete a single report
+      deleteReport: async (id) => {
+        try {
+          set({ loading: true, error: null });
+          const accessToken = useAuthStore.getState().accessToken;
+          
+          if (!accessToken) {
+            throw new Error("Authentication required");
+          }
+          
+          const response = await fetch(`${SERVER_API}/reports/${id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast.success("Report deleted successfully");
+            return { success: true };
+          } else {
+            throw new Error(data.message || "Failed to delete report");
+          }
+        } catch (error) {
+          set({ error: error.message });
+          console.error("Delete report error:", error);
+          toast.error(error.message || "Error deleting report");
+          return { success: false, message: error.message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+      
+      // Delete multiple reports
+      deleteReports: async ({ startDate, endDate, category } = {}) => {
+        try {
+          set({ loading: true, error: null });
+          const accessToken = useAuthStore.getState().accessToken;
+          
+          if (!accessToken) {
+            throw new Error("Authentication required");
+          }
+          
+          if (!startDate || !endDate) {
+            throw new Error("Start date and end date are required");
+          }
+          
+          const response = await fetch(`${SERVER_API}/reports/`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+              startDate,
+              endDate,
+              category
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast.success(data.message || "Reports deleted successfully");
+            return { success: true, deletedCount: data.deletedCount };
+          } else {
+            throw new Error(data.message || "Failed to delete reports");
+          }
+        } catch (error) {
+          set({ error: error.message });
+          console.error("Delete reports error:", error);
+          toast.error(error.message || "Error deleting reports");
+          return { success: false, message: error.message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+      
+      // Delete all reports
+      deleteAllReports: async () => {
+        try {
+          set({ loading: true, error: null });
+          const accessToken = useAuthStore.getState().accessToken;
+          
+          if (!accessToken) {
+            throw new Error("Authentication required");
+          }
+          
+          const response = await fetch(`${SERVER_API}/reports/all?confirmDelete=true`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Reset all report-related state
+            set({
+              salesReports: null,
+              productReports: null,
+              categoryReports: null,
+              paymentReports: null,
+              inventoryValuation: null
+            });
+            
+            toast.success(data.message || "All reports deleted successfully");
+            return { success: true, deletedCount: data.deletedCount };
+          } else {
+            throw new Error(data.message || "Failed to delete all reports");
+          }
+        } catch (error) {
+          set({ error: error.message });
+          console.error("Delete all reports error:", error);
+          toast.error(error.message || "Error deleting all reports");
+          return { success: false, message: error.message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+      
+      // Reset dashboard data
+      resetDashboardData: async () => {
+        try {
+          set({ loading: true, error: null });
+          const accessToken = useAuthStore.getState().accessToken;
+          
+          if (!accessToken) {
+            throw new Error("Authentication required");
+          }
+          
+          const response = await fetch(`${SERVER_API}/reports/dashboard/reset`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast.success(data.message || "Dashboard data reset successfully");
+            return { success: true, deletedReports: data.deletedReports };
+          } else {
+            throw new Error(data.message || "Failed to reset dashboard data");
+          }
+        } catch (error) {
+          set({ error: error.message });
+          console.error("Reset dashboard error:", error);
+          toast.error(error.message || "Error resetting dashboard data");
+          return { success: false, message: error.message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+      
       // Reset errors
       resetErrors: () => set({ error: null }),
       
