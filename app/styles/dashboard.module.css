@@ -7,7 +7,8 @@
     overflow: hidden;
     overflow-y: auto;
     color: var(--primary-color);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   }
 
   .dashboardHeader {
@@ -58,19 +59,18 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: var(--tertiary-color);
-    color: white;
+    background-color: var(--return-color);
+    color: var(--background-color);
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     padding: 8px 16px;
-    font-weight: 500;
     cursor: pointer;
+    font-family: var(--font-poppins-medium);
     transition: background-color 0.2s ease-in-out;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .resetButton:hover {
-    background-color: var(--tertiary-color-dark);
+    background-color: var(--return-color-light);
   }
 
   .resetButton:disabled {
@@ -80,9 +80,13 @@
 
   /* Section Title */
   .sectionTitle {
+    gap: 10px;
     margin: 24px 0 16px;
     border-bottom: 1px solid rgba(224, 224, 224, 0.3);
     padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .sectionTitle h2 {
@@ -196,7 +200,7 @@
     margin-bottom: 24px;
   }
 
-  .revenueChart, 
+  .revenueChart,
   .totalSales {
     background-color: var(--background-color);
     border-radius: 12px;
@@ -540,7 +544,8 @@
     gap: 8px;
   }
 
-  .viewButton, .reminderButton {
+  .viewButton,
+  .reminderButton {
     padding: 6px 12px;
     border-radius: 6px;
     font-size: 13px;
@@ -574,7 +579,8 @@
   }
 
   /* Loading and Error States */
-  .loadingContainer, .errorContainer {
+  .loadingContainer,
+  .errorContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -594,7 +600,9 @@
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .retryButton {
@@ -615,77 +623,81 @@
 
   /* Add these styles to your dashboard.module.css file */
 
-.refreshingIndicator {
-  display: inline-block;
-  font-size: 14px;
-  color: #666;
-  margin-left: 10px;
-  font-style: italic;
-}
+  .refreshingIndicator {
+    display: inline-block;
+    font-size: 14px;
+    color: #666;
+    margin-left: 10px;
+    font-style: italic;
+  }
 
-.refreshButton {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-}
+  .refreshButton {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
 
-.refreshButton:hover {
-  background-color: #e3e3e3;
-}
+  .refreshButton:hover {
+    background-color: #e3e3e3;
+  }
 
-.refreshButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+  .refreshButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
-.spinning {
-  animation: spin 1s linear infinite;
-  margin-right: 6px;
-}
+  .spinning {
+    animation: spin 1s linear infinite;
+    margin-right: 6px;
+  }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
-/* Debt status badges */
-.statusBadge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
+  /* Debt status badges */
+  .statusBadge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
 
-.currentBadge {
-  background-color: rgba(76, 175, 80, 0.2);
-  color: #2e7d32;
-}
+  .currentBadge {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #2e7d32;
+  }
 
-.overdueBadge {
-  background-color: rgba(244, 67, 54, 0.2);
-  color: #d32f2f;
-}
+  .overdueBadge {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #d32f2f;
+  }
 
-.paidBadge {
-  background-color: rgba(33, 150, 243, 0.2);
-  color: #1976d2;
-}
+  .paidBadge {
+    background-color: rgba(33, 150, 243, 0.2);
+    color: #1976d2;
+  }
 
-/* Added styles for better debt table info */
-.overdueRow {
-  background-color: rgba(244, 67, 54, 0.05);
-}
+  /* Added styles for better debt table info */
+  .overdueRow {
+    background-color: rgba(244, 67, 54, 0.05);
+  }
 
-.overdueRow:hover {
-  background-color: rgba(244, 67, 54, 0.1);
-}
+  .overdueRow:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+  }
 }
 
 /* Media Queries */

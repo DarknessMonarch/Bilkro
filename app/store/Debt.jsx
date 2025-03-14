@@ -361,13 +361,61 @@ export const useDebtStore = create(
         }
       },
 
+      deleteAllDebts: async () => {
+        try {
+          set({ loading: true, error: null });
+          const accessToken = useAuthStore.getState().accessToken;
+          
+          if (!accessToken) {
+            throw new Error('Authentication required');
+          }
+          
+          const response = await fetch(`${SERVER_API}/debt/admin/delete-all`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Clear all debt data in the store
+            set({ 
+              debts: [],
+              singleDebt: null,
+              overdueDebts: null,
+              debtStatistics: null
+            });
+            
+            return { 
+              success: true, 
+              message: data.message,
+              deletedCount: data.deletedCount
+            };
+          } else {
+            throw new Error(data.message || 'Failed to delete debt records');
+          }
+        } catch (error) {
+          set({ error: error.message });
+          return { success: false, message: error.message };
+        } finally {
+          set({ loading: false });
+        }
+      },
+
       // Clear debt data
       clearDebtData: () => {
         set({
           debts: [],
           singleDebt: null,
           overdueDebts: null,
-          debtStatistics: null, // Also clear statistics
+          debtStatistics: null, 
           error: null
         });
       }

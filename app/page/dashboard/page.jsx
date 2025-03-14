@@ -5,7 +5,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 
 import { BsCartPlus as CartIcon } from "react-icons/bs";
-import { FaSync as ResetIcon } from "react-icons/fa";
+import { FaSync as ResetIcon, FaTrash as DeleteIcon } from "react-icons/fa";
 import { FaChartLine, FaUsers, FaShoppingCart, FaMoneyBillWave, FaCreditCard, FaExclamationTriangle, FaSync } from "react-icons/fa";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -28,11 +28,12 @@ export default function Dashboard() {
     error: debtError,
     debts,
     overdueDebts,
-    debtStatistics, // New state for debt statistics
+    debtStatistics, 
     getAllDebts,
     getOverdueDebtsReport,
-    getDebtStatistics, // New function to get debt statistics
-    sendReminder
+    getDebtStatistics, 
+    sendReminder,
+    deleteAllDebts
   } = useDebtStore();
   
   const { isAdmin } = useAuthStore();
@@ -41,21 +42,18 @@ export default function Dashboard() {
   const [isResetting, setIsResetting] = useState(false);
   const [debtView, setDebtView] = useState('summary');
   const [reminderSending, setReminderSending] = useState({});
-  
-  // Combined loading state
+  const [isDeletingDebts, setIsDeletingDebts] = useState(false);
+
   const loading = dashboardLoading || debtLoading;
   const error = dashboardError || debtError;
   
-  // Fetch dashboard data and debt data on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load both dashboard and debt data
         const dashboardResult = await fetchDashboardData();
         const debtsResult = await getAllDebts();
         const overdueResult = await getOverdueDebtsReport();
         
-        // New: Get debt statistics from the API
         const statisticsResult = await getDebtStatistics();
         
         if (!dashboardResult.success || !debtsResult.success || 
@@ -71,13 +69,13 @@ export default function Dashboard() {
     loadData();
   }, [fetchDashboardData, getAllDebts, getOverdueDebtsReport, getDebtStatistics]);
   
-  // Handle restock action
   const handleRestock = async (productId) => {
     toast.success(`Added product #${productId} to restock list`);
     // This would typically add the product to the cart or a restock queue
   };
+
   
-  // Handle dashboard reset
+  
   const handleResetDashboard = async () => {
     try {
       setIsResetting(true);
@@ -88,9 +86,7 @@ export default function Dashboard() {
         
         if (result.success) {
           toast.success(`Dashboard reset successfully. ${result.deletedReports} reports deleted.`);
-          // Refresh dashboard data after reset
           await fetchDashboardData();
-          // Also refresh debt statistics
           await getDebtStatistics();
         } else {
           toast.error("Failed to reset dashboard data");
@@ -102,8 +98,35 @@ export default function Dashboard() {
       setIsResetting(false);
     }
   };
+
+  const handleDeleteAllDebts = async () => {
+    try {
+      setIsDeletingDebts(true);
+      const confirmDelete = window.confirm("WARNING: Are you sure you want to delete ALL debt records? This action cannot be undone.");
+      
+      if (confirmDelete) {
+        // Double-check with a second confirmation
+        const secondConfirm = window.confirm("Please confirm again. This will permanently delete ALL debt records in the system.");
+        
+        if (secondConfirm) {
+          const result = await deleteAllDebts();
+          
+          if (result.success) {
+            toast.success(`All debt records deleted successfully. ${result.deletedCount} records were removed.`);
+            // Refresh debt statistics
+            await getDebtStatistics();
+          } else {
+            toast.error("Failed to delete debt records: " + (result.message || "Unknown error"));
+          }
+        }
+      }
+    } catch (err) {
+      toast.error("Error deleting debt records: " + (err.message || "Unknown error"));
+    } finally {
+      setIsDeletingDebts(false);
+    }
+  };
   
-  // Handle debt reminder
   const handleSendReminder = async (debtId) => {
     try {
       setReminderSending(prev => ({ ...prev, [debtId]: true }));
@@ -123,10 +146,8 @@ export default function Dashboard() {
     }
   };
   
-  // Handle data export
   const handleExportData = async () => {
     try {
-      // This would require the useReportStore to handle exports
       const { exportSalesReports } = await import("@/app/store/Report").then(
         (module) => module.useReportStore.getState()
       );
@@ -252,7 +273,7 @@ export default function Dashboard() {
             onClick={handleResetDashboard}
             disabled={isResetting}
           >
-            <ResetIcon /> {isResetting ? 'Resetting...' : 'Reset Dashboard'}
+            <ResetIcon /> {isResetting ? 'Resetting...' : 'Reset'}
           </button>
         </div>
       </div>
@@ -322,7 +343,15 @@ export default function Dashboard() {
       {/* Debt Summary Section */}
       <div className={styles.sectionTitle}>
         <h2>Debt Management</h2>
-        {debtLoading && <span className={styles.refreshingIndicator}>Refreshing...</span>}
+        <div className={styles.sectionActions}>
+          <button 
+            className={`${styles.dangerButton} ${styles.resetButton}  ${isDeletingDebts ? styles.loadingButton : ''}`}
+            onClick={handleDeleteAllDebts}
+            disabled={isDeletingDebts || debtLoading}
+          >
+            <DeleteIcon /> {isDeletingDebts ? 'Deleting...' : 'Delete'} 
+          </button>
+        </div>
       </div>
       
       <div className={styles.statsContainer}>
