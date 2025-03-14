@@ -216,6 +216,7 @@ export default function Settings() {
     }
   };
 
+
   const handleDeleteAccount = async () => {
     if (
       !window.confirm(
@@ -224,7 +225,7 @@ export default function Settings() {
     ) {
       return;
     }
-
+  
     setLoadingState("deleteAccount", true);
     try {
       const result = await deleteAccount();
@@ -235,7 +236,8 @@ export default function Settings() {
         toast.error(result.message || "Failed to delete account");
       }
     } catch (error) {
-      toast.error("An error occurred while deleting account");
+      toast.error("An error occurred while deleting your account");
+      console.error("Delete account error:", error);
     } finally {
       setLoadingState("deleteAccount", false);
     }

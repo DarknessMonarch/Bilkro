@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/store/Auth";
 import styles from "@/app/styles/account.module.css";
+import { toast } from "sonner"; 
 
 export default function Account() {
   const { 
@@ -25,6 +26,8 @@ export default function Account() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
+  const [bulkDeleteResults, setBulkDeleteResults] = useState(null);
+  const [showBulkResults, setShowBulkResults] = useState(false);
 
   // Fetch users based on active tab
   useEffect(() => {
@@ -73,12 +76,15 @@ export default function Account() {
         setUsers(users.map(user => 
           user._id === userId ? { ...user, isAdmin: !isCurrentlyAdmin } : user
         ));
+        toast.success(result.message || `Admin privileges ${!isCurrentlyAdmin ? 'granted' : 'revoked'} successfully`);
       } else {
         setError(result.message || "Failed to update admin status");
+        toast.error(result.message || "Failed to update admin status");
       }
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -86,7 +92,11 @@ export default function Account() {
 
   // Handle user deletion
   const handleDeleteUser = async (userId) => {
-    if (!confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+    // Get user info for better UX messaging
+    const userToDelete = users.find(user => user._id === userId);
+    if (!userToDelete) return;
+
+    if (!confirm(`Are you sure you want to delete ${userToDelete.username}'s account? This action cannot be undone.`)) {
       return;
     }
 
@@ -97,12 +107,25 @@ export default function Account() {
       if (result.success) {
         // Remove user from the list
         setUsers(users.filter(user => user._id !== userId));
+        toast.success(result.message || "User deleted successfully");
+        
+        // Remove from selected users if they were selected
+        if (selectedUsers.includes(userId)) {
+          setSelectedUsers(selectedUsers.filter(id => id !== userId));
+        }
       } else {
+        // Handle specific error cases
+        if (result.message?.includes("Default admin")) {
+          toast.error("Default admin account cannot be deleted");
+        } else {
+          toast.error(result.message || "Failed to delete user");
+        }
         setError(result.message || "Failed to delete user");
       }
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
+      toast.error("An unexpected error occurred while deleting user");
     } finally {
       setLoading(false);
     }
@@ -112,6 +135,7 @@ export default function Account() {
   const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) {
       setError("No users selected for deletion");
+      toast.error("No users selected for deletion");
       return;
     }
     
@@ -124,16 +148,38 @@ export default function Account() {
       const result = await bulkDeleteAccounts(selectedUsers);
       
       if (result.success) {
+        // Store delete results for display
+        setBulkDeleteResults(result.data);
+
         // Remove deleted users from the list
-        setUsers(users.filter(user => !selectedUsers.includes(user._id)));
+        if (result.data.deletedCount > 0) {
+          // Some users may have been skipped (default admin) so we need to
+          // determine which ones were actually deleted
+          const skippedIds = result.data.skippedAdminIds || [];
+          const failedIds = (result.data.failedDeletions || []).map(failure => failure.userId);
+          
+          // Successfully deleted users are those that were not skipped or failed
+          const deletedUserIds = selectedUsers.filter(
+            id => !skippedIds.includes(id) && !failedIds.includes(id)
+          );
+          
+          // Update users list
+          setUsers(users.filter(user => !deletedUserIds.includes(user._id)));
+        }
+        
         setSelectedUsers([]);
         setConfirmDelete(false);
+        setShowBulkResults(true);
+        
+        toast.success(`Successfully deleted ${result.data.deletedCount} user(s)`);
       } else {
         setError(result.message || "Failed to delete users");
+        toast.error(result.message || "Failed to delete users");
       }
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
+      toast.error("An unexpected error occurred during bulk deletion");
     } finally {
       setLoading(false);
     }
@@ -164,6 +210,12 @@ export default function Account() {
   // Cancel bulk delete operation
   const cancelBulkDelete = () => {
     setConfirmDelete(false);
+  };
+
+  // Close bulk results modal
+  const closeBulkResults = () => {
+    setShowBulkResults(false);
+    setBulkDeleteResults(null);
   };
 
   // Toggle select all users
@@ -337,6 +389,7 @@ export default function Account() {
         </div>
       )}
 
+      {/* Confirm Deletion Modal */}
       {confirmDelete && (
         <div className={styles.modalOverlay}>
           <div className={styles.confirmModal}>
@@ -354,8 +407,61 @@ export default function Account() {
               <button 
                 className={styles.confirmButton}
                 onClick={confirmBulkDelete}
+                disabled={loading}
               >
-                Confirm Delete
+                {loading ? "Processing..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Results Modal */}
+      {showBulkResults && bulkDeleteResults && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.resultsModal}>
+            <h3>Bulk Deletion Results</h3>
+            
+            <div className={styles.resultsSummary}>
+              <div className={styles.resultItem}>
+                <span className={styles.resultLabel}>Successfully Deleted:</span>
+                <span className={styles.resultValue}>{bulkDeleteResults.deletedCount}</span>
+              </div>
+              
+              {bulkDeleteResults.failedCount > 0 && (
+                <div className={styles.resultItem}>
+                  <span className={styles.resultLabel}>Failed:</span>
+                  <span className={styles.resultValue}>{bulkDeleteResults.failedCount}</span>
+                </div>
+              )}
+              
+              {bulkDeleteResults.skippedAdminCount > 0 && (
+                <div className={styles.resultItem}>
+                  <span className={styles.resultLabel}>Skipped (Default Admin):</span>
+                  <span className={styles.resultValue}>{bulkDeleteResults.skippedAdminCount}</span>
+                </div>
+              )}
+            </div>
+            
+            {bulkDeleteResults.failedDeletions && bulkDeleteResults.failedDeletions.length > 0 && (
+              <div className={styles.failedList}>
+                <h4>Failed Deletions:</h4>
+                <ul>
+                  {bulkDeleteResults.failedDeletions.map((failure, index) => (
+                    <li key={index}>
+                      <span className={styles.failedId}>{failure.userId}</span>: {failure.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.confirmButton}
+                onClick={closeBulkResults}
+              >
+                Close
               </button>
             </div>
           </div>

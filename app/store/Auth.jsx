@@ -411,20 +411,23 @@ export const useAuthStore = create(
       deleteUserAccount: async (userId) => {
         try {
           const { accessToken } = get();
-          const response = await fetch(`${SERVER_API}/auth/delete-account/${userId}`, {
+          const response = await fetch(`${SERVER_API}/auth/admin/delete-user/${userId}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
           });
-
+      
           const data = await response.json();
           return { success: data.status === "success", message: data.message };
         } catch (error) {
-          return { success: false, message: "Failed to delete user account" };
+          return { 
+            success: false, 
+            message: error.message || "Failed to delete user account" 
+          };
         }
       },
-
+      
       deleteAccount: async () => {
         try {
           const { accessToken } = get();
@@ -435,7 +438,7 @@ export const useAuthStore = create(
               Authorization: `Bearer ${accessToken}`,
             },
           });
-
+      
           const data = await response.json();
           if (data.status === "success") {
             get().clearUser();
@@ -443,10 +446,13 @@ export const useAuthStore = create(
           }
           return { success: false, message: data.message };
         } catch (error) {
-          return { success: false, message: "Failed to delete account" };
+          return { 
+            success: false, 
+            message: error.message || "Failed to delete account" 
+          };
         }
       },
-
+      
       bulkDeleteAccounts: async (userIds) => {
         try {
           const { accessToken } = get();
@@ -458,7 +464,7 @@ export const useAuthStore = create(
             },
             body: JSON.stringify({ userIds }),
           });
-
+      
           const data = await response.json();
           return {
             success: data.status === "success",
@@ -468,7 +474,7 @@ export const useAuthStore = create(
         } catch (error) {
           return {
             success: false,
-            message: "Failed to perform bulk deletion",
+            message: error.message || "Failed to perform bulk deletion",
           };
         }
       },
