@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/app/store/Auth";
+
 import { useReportStore } from "@/app/store/Report";
-import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from "recharts";
+import {
+  LineChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Line,
+} from "recharts";
 import styles from "@/app/styles/report.module.css";
 
 export default function Report() {
@@ -12,14 +22,15 @@ export default function Report() {
     overview: { totalProfit: 0, revenue: 0, sales: 0, netPurchaseValue: 0 },
     chartData: [],
     categoryData: [],
-    productData: []
+    productData: [],
   });
+  const { isAdmin } = useAuthStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { 
-    getSalesReports, 
-    getProductReports, 
-    getCategoryReports, 
+  const {
+    getSalesReports,
+    getProductReports,
+    getCategoryReports,
     getPaymentMethodReports,
     getInventoryValuationReport,
     deleteReport,
@@ -30,7 +41,7 @@ export default function Report() {
     productReports,
     categoryReports,
     paymentReports,
-    inventoryValuation
+    inventoryValuation,
   } = useReportStore();
 
   useEffect(() => {
@@ -38,112 +49,150 @@ export default function Report() {
     const fetchReportData = async () => {
       try {
         // Show loading toast
-        const loadingToast = toast.loading('Loading report data...');
-        
+        const loadingToast = toast.loading("Loading report data...");
+
         // Get sales reports
         const salesResult = await getSalesReports({
-          period: timeframe.toLowerCase()
+          period: timeframe.toLowerCase(),
         });
-        
+
         // Get product reports
         const productResult = await getProductReports({
           limit: 10,
-          sortBy: 'totalSales',
-          order: 'desc'
+          sortBy: "totalSales",
+          order: "desc",
         });
-        
+
         // Get category reports
         const categoryResult = await getCategoryReports({
-          limit: 5
+          limit: 5,
         });
-        
+
         // Get payment reports
         const paymentResult = await getPaymentMethodReports();
-        
+
         // Get inventory valuation
         const inventoryResult = await getInventoryValuationReport();
-        
+
         // Dismiss loading toast
         toast.dismiss(loadingToast);
-        
-        if (!salesResult.success || !productResult.success || !categoryResult.success) {
+
+        if (
+          !salesResult.success ||
+          !productResult.success ||
+          !categoryResult.success
+        ) {
           toast.error("Failed to load some report data");
         } else {
           toast.success("Report data loaded successfully");
         }
       } catch (err) {
-        toast.error("Error loading report data: " + (err.message || "Unknown error"));
+        toast.error(
+          "Error loading report data: " + (err.message || "Unknown error")
+        );
       }
     };
 
     fetchReportData();
-  }, [timeframe, getSalesReports, getProductReports, getCategoryReports, getPaymentMethodReports, getInventoryValuationReport]);
+  }, [
+    timeframe,
+    getSalesReports,
+    getProductReports,
+    getCategoryReports,
+    getPaymentMethodReports,
+    getInventoryValuationReport,
+  ]);
 
   // Process data when store values change
   useEffect(() => {
-    if (salesReports !== undefined || productReports !== undefined || categoryReports !== undefined || inventoryValuation !== undefined) {
+    if (
+      salesReports !== undefined ||
+      productReports !== undefined ||
+      categoryReports !== undefined ||
+      inventoryValuation !== undefined
+    ) {
       // Process chart data from sales reports
-      const chartData = salesReports && salesReports.length > 0 
-        ? salesReports.map(item => ({
-            name: item.period,
-            Revenue: item.totalRevenue,
-            Profit: item.totalProfit
-          }))
-        : [];
-      
+      const chartData =
+        salesReports && salesReports.length > 0
+          ? salesReports.map((item) => ({
+              name: item.period,
+              Revenue: item.totalRevenue,
+              Profit: item.totalProfit,
+            }))
+          : [];
+
       // Get top selling products
-      const topProducts = productReports && productReports.length > 0 
-        ? productReports.slice(0, 4).map(item => ({
-            product: item.name,
-            productId: item.id,
-            category: item.category,
-            remainingQuantity: item.stock ? `${item.stock} ${item.unit || ''}` : "",
-            turnOver: `$${item.totalSales.toLocaleString()}`,
-            increaseBy: `${item.growthRate.toFixed(1)}%`,
-            increaseColor: item.growthRate >= 0 ? "#10b981" : "#ef4444"
-          })) 
-        : [];
-      
+      const topProducts =
+        productReports && productReports.length > 0
+          ? productReports.slice(0, 4).map((item) => ({
+              product: item.name,
+              productId: item.id,
+              category: item.category,
+              remainingQuantity: item.stock
+                ? `${item.stock} ${item.unit || ""}`
+                : "",
+              turnOver: `$${item.totalSales.toLocaleString()}`,
+              increaseBy: `${item.growthRate.toFixed(1)}%`,
+              increaseColor: item.growthRate >= 0 ? "#10b981" : "#ef4444",
+            }))
+          : [];
+
       // Get top selling categories
-      const topCategories = categoryReports && categoryReports.length > 0 
-        ? categoryReports.slice(0, 3).map(item => ({
-            category: item.name,
-            turnOver: `$${item.totalSales.toLocaleString()}`,
-            increaseBy: `${item.growthRate.toFixed(1)}%`,
-            increaseColor: item.growthRate >= 0 ? "#10b981" : "#ef4444"
-          })) 
-        : [];
-      
+      const topCategories =
+        categoryReports && categoryReports.length > 0
+          ? categoryReports.slice(0, 3).map((item) => ({
+              category: item.name,
+              turnOver: `$${item.totalSales.toLocaleString()}`,
+              increaseBy: `${item.growthRate.toFixed(1)}%`,
+              increaseColor: item.growthRate >= 0 ? "#10b981" : "#ef4444",
+            }))
+          : [];
+
       // Calculate overview data
       let totalProfit = 0;
       let totalRevenue = 0;
       let totalSales = 0;
       let netPurchaseValue = 0;
-      
+
       if (salesReports && salesReports.length > 0) {
-        totalProfit = salesReports.reduce((sum, item) => sum + item.totalProfit, 0);
-        totalRevenue = salesReports.reduce((sum, item) => sum + item.totalRevenue, 0);
-        totalSales = salesReports.reduce((sum, item) => sum + item.orderCount, 0);
+        totalProfit = salesReports.reduce(
+          (sum, item) => sum + item.totalProfit,
+          0
+        );
+        totalRevenue = salesReports.reduce(
+          (sum, item) => sum + item.totalRevenue,
+          0
+        );
+        totalSales = salesReports.reduce(
+          (sum, item) => sum + item.orderCount,
+          0
+        );
       }
-      
+
       if (inventoryValuation) {
         netPurchaseValue = inventoryValuation.totalValue;
       }
-      
+
       // Set all processed data
       setReportData({
         overview: {
           totalProfit,
           revenue: totalRevenue,
           sales: totalSales,
-          netPurchaseValue
+          netPurchaseValue,
         },
         chartData: chartData.length > 0 ? chartData : [],
         categoryData: topCategories.length > 0 ? topCategories : [],
-        productData: topProducts.length > 0 ? topProducts : []
+        productData: topProducts.length > 0 ? topProducts : [],
       });
     }
-  }, [salesReports, productReports, categoryReports, paymentReports, inventoryValuation]);
+  }, [
+    salesReports,
+    productReports,
+    categoryReports,
+    paymentReports,
+    inventoryValuation,
+  ]);
 
   // Handle timeframe toggle
   const handleTimeframeChange = () => {
@@ -157,7 +206,9 @@ export default function Report() {
       return (
         <div className={styles.customTooltip}>
           <p className={styles.tooltipLabel}>{label}</p>
-          <p className={styles.tooltipValue}>${payload[0].value.toLocaleString()}</p>
+          <p className={styles.tooltipValue}>
+            ${payload[0].value.toLocaleString()}
+          </p>
         </div>
       );
     }
@@ -169,13 +220,13 @@ export default function Report() {
     try {
       const exportPromise = useReportStore.getState().exportSalesReports({
         period: timeframe.toLowerCase(),
-        format: 'csv'
+        format: "csv",
       });
-      
+
       toast.promise(exportPromise, {
-        loading: 'Exporting report...',
-        success: 'Report exported successfully',
-        error: 'Failed to export report'
+        loading: "Exporting report...",
+        success: "Report exported successfully",
+        error: "Failed to export report",
       });
     } catch (err) {
       toast.error("Failed to export report");
@@ -189,20 +240,22 @@ export default function Report() {
         toast.error("Report ID is required");
         return;
       }
-      
+
       const deletePromise = deleteReport(reportId);
-      
+
       toast.promise(deletePromise, {
-        loading: 'Deleting report...',
+        loading: "Deleting report...",
         success: () => {
           // Refresh the reports after successful deletion
           getSalesReports({ period: timeframe.toLowerCase() });
           return "Report deleted successfully";
         },
-        error: 'Failed to delete report'
+        error: "Failed to delete report",
       });
     } catch (err) {
-      toast.error("Failed to delete report: " + (err.message || "Unknown error"));
+      toast.error(
+        "Failed to delete report: " + (err.message || "Unknown error")
+      );
     }
   };
 
@@ -210,40 +263,49 @@ export default function Report() {
   const handleDeleteAllReports = async () => {
     try {
       const deletePromise = deleteAllReports();
-      
+
       toast.promise(deletePromise, {
-        loading: 'Deleting all reports...',
+        loading: "Deleting all reports...",
         success: (result) => {
           // Refresh the reports after successful deletion
           getSalesReports({ period: timeframe.toLowerCase() });
-          getProductReports({ limit: 10, sortBy: 'totalSales', order: 'desc' });
+          getProductReports({ limit: 10, sortBy: "totalSales", order: "desc" });
           getCategoryReports({ limit: 5 });
           getPaymentMethodReports();
           getInventoryValuationReport();
-          
+
           // Manually reset report data to ensure UI is cleared
           setReportData({
-            overview: { totalProfit: 0, revenue: 0, sales: 0, netPurchaseValue: 0 },
+            overview: {
+              totalProfit: 0,
+              revenue: 0,
+              sales: 0,
+              netPurchaseValue: 0,
+            },
             chartData: [],
             categoryData: [],
-            productData: []
+            productData: [],
           });
-          
+
           // Hide the confirmation dialog
           setShowDeleteConfirm(false);
-          
-          return `All reports deleted successfully. ${result.deletedCount || ''} reports removed.`;
+
+          return `All reports deleted successfully. ${
+            result.deletedCount || ""
+          } reports removed.`;
         },
-        error: 'Failed to delete reports'
+        error: "Failed to delete reports",
       });
     } catch (err) {
-      toast.error("Failed to delete reports: " + (err.message || "Unknown error"));
+      toast.error(
+        "Failed to delete reports: " + (err.message || "Unknown error")
+      );
     }
   };
 
   // Toggle delete confirmation
   const toggleDeleteConfirm = () => {
-    setShowDeleteConfirm(prev => !prev);
+    setShowDeleteConfirm((prev) => !prev);
   };
 
   // Function to show a message when no data is available
@@ -253,24 +315,38 @@ export default function Report() {
     </div>
   );
 
+  if (!isAdmin) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <div className={styles.dashboardHeader}>
+          <h1>Dashboard</h1>
+        </div>
+        <h2>Access Denied</h2>
+        <p>You do not have permission to access this page.</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.reportContainer}>
-      {loading && <div className={styles.loadingOverlay}>Loading reports...</div>}
-      
+      {loading && (
+        <div className={styles.loadingOverlay}>Loading reports...</div>
+      )}
+
       {/* Overview Section */}
       <div className={styles.overviewSection}>
         <div className={styles.sectionHeader}>
           <h2>Overview</h2>
           <div className={styles.actionButtons}>
-            <button 
-              onClick={handleExportReport} 
+            <button
+              onClick={handleExportReport}
               className={styles.exportButton}
               disabled={loading}
             >
               Export Report
             </button>
-            <button 
-              onClick={toggleDeleteConfirm} 
+            <button
+              onClick={toggleDeleteConfirm}
               className={styles.deleteButton}
               disabled={loading}
             >
@@ -280,17 +356,25 @@ export default function Report() {
         </div>
         <div className={styles.overviewCards}>
           <div className={styles.overviewCard}>
-            <div className={styles.cardValue}>${reportData.overview.totalProfit.toLocaleString()}</div>
+            <div className={styles.cardValue}>
+              ${reportData.overview.totalProfit.toLocaleString()}
+            </div>
             <div className={styles.cardLabel}>Total Profit</div>
           </div>
-          
+
           <div className={styles.overviewCard}>
-            <div className={`${styles.cardValue} ${styles.purple}`}>{reportData.overview.sales.toLocaleString()}</div>
+            <div className={`${styles.cardValue} ${styles.purple}`}>
+              {reportData.overview.sales.toLocaleString()}
+            </div>
             <div className={`${styles.cardLabel} ${styles.purple}`}>Sales</div>
           </div>
           <div className={`${styles.overviewCard}`}>
-            <div className={`${styles.cardValue} ${styles.orange}`}>${reportData.overview.revenue.toLocaleString()}</div>
-            <div className={`${styles.cardLabel} ${styles.orange}`}>Revenue</div>
+            <div className={`${styles.cardValue} ${styles.orange}`}>
+              ${reportData.overview.revenue.toLocaleString()}
+            </div>
+            <div className={`${styles.cardLabel} ${styles.orange}`}>
+              Revenue
+            </div>
           </div>
         </div>
       </div>
@@ -300,18 +384,18 @@ export default function Report() {
         <div className={styles.deleteConfirmation}>
           <h3>Delete All Reports</h3>
           <p className={styles.deleteWarning}>
-            WARNING: This action will permanently delete ALL reports from the system. 
-            This cannot be undone.
+            WARNING: This action will permanently delete ALL reports from the
+            system. This cannot be undone.
           </p>
           <div className={styles.confirmButtons}>
-            <button 
-              onClick={handleDeleteAllReports} 
+            <button
+              onClick={handleDeleteAllReports}
               className={styles.confirmDeleteButton}
             >
               Yes, Delete All Reports
             </button>
-            <button 
-              onClick={toggleDeleteConfirm} 
+            <button
+              onClick={toggleDeleteConfirm}
               className={styles.cancelButton}
             >
               Cancel
@@ -346,15 +430,11 @@ export default function Report() {
                   margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                  <YAxis
                     axisLine={false}
                     tickLine={false}
-                  />
-                  <YAxis 
-                    axisLine={false}
-                    tickLine={false}
-                    domain={[0, 'dataMax + 10000']}
+                    domain={[0, "dataMax + 10000"]}
                     tickFormatter={(value) => `${value.toLocaleString()}`}
                   />
                   <Tooltip content={<CustomTooltip />} />
@@ -363,7 +443,12 @@ export default function Report() {
                     dataKey="Revenue"
                     stroke="#3b82f6"
                     dot={false}
-                    activeDot={{ r: 8, stroke: "#3b82f6", strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{
+                      r: 8,
+                      stroke: "#3b82f6",
+                      strokeWidth: 2,
+                      fill: "#fff",
+                    }}
                     strokeWidth={3}
                   />
                   <Line
@@ -371,7 +456,12 @@ export default function Report() {
                     dataKey="Profit"
                     stroke="#a855f7"
                     dot={false}
-                    activeDot={{ r: 8, stroke: "#a855f7", strokeWidth: 2, fill: "#fff" }}
+                    activeDot={{
+                      r: 8,
+                      stroke: "#a855f7",
+                      strokeWidth: 2,
+                      fill: "#fff",
+                    }}
                     strokeWidth={3}
                   />
                 </LineChart>
@@ -415,13 +505,18 @@ export default function Report() {
                     <td>{item.category}</td>
                     <td>{item.turnOver}</td>
                     <td>
-                      <span className={styles.increaseValue} style={{ color: item.increaseColor }}>
+                      <span
+                        className={styles.increaseValue}
+                        style={{ color: item.increaseColor }}
+                      >
                         {item.increaseBy}
                       </span>
                     </td>
                     <td>
-                      <button 
-                        onClick={() => handleDeleteReport(categoryReports?.[index]?.id)}
+                      <button
+                        onClick={() =>
+                          handleDeleteReport(categoryReports?.[index]?.id)
+                        }
                         className={styles.actionButton}
                         disabled={loading || !categoryReports?.[index]?.id}
                       >
@@ -466,13 +561,18 @@ export default function Report() {
                     <td>{item.remainingQuantity}</td>
                     <td>{item.turnOver}</td>
                     <td>
-                      <span className={styles.increaseValue} style={{ color: item.increaseColor }}>
+                      <span
+                        className={styles.increaseValue}
+                        style={{ color: item.increaseColor }}
+                      >
                         {item.increaseBy}
                       </span>
                     </td>
                     <td>
-                      <button 
-                        onClick={() => handleDeleteReport(productReports?.[index]?.id)}
+                      <button
+                        onClick={() =>
+                          handleDeleteReport(productReports?.[index]?.id)
+                        }
                         className={styles.actionButton}
                         disabled={loading || !productReports?.[index]?.id}
                       >

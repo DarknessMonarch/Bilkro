@@ -13,7 +13,7 @@ import { CheckoutReceipt } from "@/app/components/Reciept";
 
 const itemsPerPage = 7;
 
-export default function CartPage() {
+export default function Cart() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -25,7 +25,11 @@ export default function CartPage() {
     address: ""
   });
   
-  // Add these new states for receipt handling
+  // Add new state for partial payment
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [isPartialPayment, setIsPartialPayment] = useState(false);
+  
+  // Receipt handling states
   const [showReceipt, setShowReceipt] = useState(false);
   const [orderData, setOrderData] = useState(null);
   
@@ -50,6 +54,13 @@ export default function CartPage() {
 
     fetchCart();
   }, [getCart]);
+
+  // When cart changes, update amountPaid if it's not a partial payment
+  useEffect(() => {
+    if (!isPartialPayment && cart?.total) {
+      setAmountPaid(cart.total);
+    }
+  }, [cart?.total, isPartialPayment]);
 
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -96,6 +107,39 @@ export default function CartPage() {
     setPaymentMethod(e.target.value);
   };
 
+  const handlePartialPaymentToggle = () => {
+    setIsPartialPayment(!isPartialPayment);
+    if (!isPartialPayment) {
+      setAmountPaid(0); // Reset amount paid when enabling partial payment
+    } else {
+      setAmountPaid(cart?.total || 0); // Set to total when disabling partial payment
+    }
+  };
+
+  const handleAmountPaidChange = (e) => {
+    const value = parseFloat(e.target.value);
+    if (isNaN(value)) {
+      setAmountPaid(0);
+    } else {
+      // Don't allow amount paid to exceed total
+      setAmountPaid(Math.min(value, cart?.total || 0));
+    }
+  };
+
+  const calculatePaymentStatus = () => {
+    if (!isPartialPayment || amountPaid >= (cart?.total || 0)) {
+      return "paid";
+    } else if (amountPaid > 0) {
+      return "partial";
+    } else {
+      return "unpaid";
+    }
+  };
+
+  const calculateRemainingBalance = () => {
+    return Math.max(0, (cart?.total || 0) - amountPaid);
+  };
+
   const handleSubmitCheckout = async (e) => {
     e.preventDefault();
     
@@ -110,10 +154,20 @@ export default function CartPage() {
         return;
       }
       
-      const result = await checkout(paymentMethod, customerInfo);
+      // Calculate payment status information
+      const paymentStatus = calculatePaymentStatus();
+      const remainingBalance = calculateRemainingBalance();
+      
+      const result = await checkout(
+        paymentMethod, 
+        customerInfo, 
+        paymentStatus, 
+        amountPaid,
+        remainingBalance
+      );
       
       if (result.success) {
-        // Format the order data for the receipt
+        // Format the order data for the receipt - UPDATED to include payment information
         const orderDetails = {
           reportId: result.orderId || `ORD-${Date.now().toString().slice(-6)}`,
           items: cart.items.map(item => ({
@@ -126,7 +180,11 @@ export default function CartPage() {
           })),
           subtotal: cart.subtotal,
           discount: cart.discount,
-          total: cart.total
+          total: cart.total,
+          // Make sure these values come from the server response, not the local state
+          paymentStatus: result.data.paymentStatus || paymentStatus,
+          amountPaid: result.data.amountPaid || amountPaid,
+          remainingBalance: result.data.remainingBalance || remainingBalance
         };
         
         // Update state to show receipt
@@ -175,7 +233,7 @@ export default function CartPage() {
   const discount = cart?.discount || 0;
   const total = cart?.total || 0;
 
-  // First, check if we should display the receipt
+  // Display the receipt if needed
   if (showReceipt && orderData) {
     return <CheckoutReceipt 
       orderData={orderData} 
@@ -285,6 +343,52 @@ export default function CartPage() {
                 </div>
               </div>
               
+              {/* New partial payment option */}
+              <div className={styles.formGroup}>
+                <div className={styles.partialPaymentToggle}>
+                  <label className={styles.toggleLabel}>
+                    <input
+                      type="checkbox"
+                      checked={isPartialPayment}
+                      onChange={handlePartialPaymentToggle}
+                    />
+                    <span>Partial Payment</span>
+                  </label>
+                </div>
+                
+                {isPartialPayment && (
+                  <div className={styles.amountPaidInput}>
+                    <label htmlFor="amountPaid">Amount Paid ($):</label>
+                    <input
+                      type="number"
+                      id="amountPaid"
+                      name="amountPaid"
+                      min="0"
+                      step="0.01"
+                      max={cart?.total || 0}
+                      value={amountPaid}
+                      onChange={handleAmountPaidChange}
+                      className={styles.formInput}
+                    />
+                  </div>
+                )}
+                
+                {isPartialPayment && (
+                  <div className={styles.paymentSummary}>
+                    <div className={styles.summaryRow}>
+                      <span>Payment Status:</span>
+                      <span className={`${styles.paymentStatus} ${styles[calculatePaymentStatus()]}`}>
+                        {calculatePaymentStatus().toUpperCase()}
+                      </span>
+                    </div>
+                    <div className={styles.summaryRow}>
+                      <span>Remaining Balance:</span>
+                      <span>${calculateRemainingBalance().toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <div className={styles.formActions}>
                 <button
                   type="button"
@@ -332,6 +436,18 @@ export default function CartPage() {
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
+              {isPartialPayment && (
+                <>
+                  <div className={styles.totalRow}>
+                    <span>Amount Paid</span>
+                    <span>${amountPaid.toFixed(2)}</span>
+                  </div>
+                  <div className={`${styles.totalRow} ${styles.remainingBalance}`}>
+                    <span>Remaining</span>
+                    <span>${calculateRemainingBalance().toFixed(2)}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -479,6 +595,26 @@ export default function CartPage() {
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
               </div>
+              {cart?.paymentStatus && cart.paymentStatus !== 'unpaid' && (
+                <>
+                  <div className={styles.summaryRow}>
+                    <span>Amount Paid:</span>
+                    <span>${(cart.amountPaid || 0).toFixed(2)}</span>
+                  </div>
+                  {cart.paymentStatus === 'partial' && (
+                    <div className={`${styles.summaryRow} ${styles.remainingBalance}`}>
+                      <span>Remaining Balance:</span>
+                      <span>${(cart.remainingBalance || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className={styles.summaryRow}>
+                    <span>Payment Status:</span>
+                    <span className={`${styles.paymentStatus} ${styles[cart.paymentStatus]}`}>
+                      {cart.paymentStatus.toUpperCase()}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </>

@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+
 import { BsCartPlus as CartIcon } from "react-icons/bs";
-import { FaTrashAlt as DeleteIcon } from "react-icons/fa";
+import { useAuthStore } from "@/app/store/Auth";
+
 import { FaSync as ResetIcon } from "react-icons/fa";
 import styles from "@/app/styles/dashboard.module.css";
 import { useDashboardStore } from "@/app/store/Dashboard";
@@ -18,6 +20,7 @@ export default function Dashboard() {
     fetchDashboardData,
     resetDashboardData
   } = useDashboardStore();
+  const { isAdmin } = useAuthStore();
   
   const [activeTab, setActiveTab] = useState('top-selling');
   const [isResetting, setIsResetting] = useState(false);
@@ -132,6 +135,18 @@ export default function Dashboard() {
     outOfStockProducts: [],
     totalSales: 0
   };
+
+  if (!isAdmin) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <div className={styles.dashboardHeader}>
+          <h1>Dashboard</h1>
+        </div>
+        <h2>Access Denied</h2>
+        <p>You do not have permission to access this page.</p>
+      </div>
+    );
+  }
   
   return (
     <div className={styles.dashboardContainer}>

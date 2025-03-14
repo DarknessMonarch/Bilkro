@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@paystack/inline-js": "^2.22.1",
+    "@react-pdf/renderer": "^4.3.0",
     "chart.js": "^4.4.5",
     "date-and-time": "^3.5.0",
     "html5-qrcode": "^2.2.7",

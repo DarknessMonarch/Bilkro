@@ -11,7 +11,7 @@ import styles from "@/app/styles/sideNav.module.css";
 import { IoMdClose as CloseIcon } from "react-icons/io";
 import { useEffect, useState, useCallback } from "react";
 import { IoCartOutline as CartIcon } from "react-icons/io5";
-import { BiMoneyWithdraw as SalesIcon } from "react-icons/bi";
+import { MdOutlineManageAccounts as AccountIcon } from "react-icons/md";
 import { HiOutlineLogout as LogoutIcon } from "react-icons/hi";
 import { TbReportAnalytics as ReportIcon } from "react-icons/tb";
 import { HiOutlineHome as DashboardIcon } from "react-icons/hi2";
@@ -103,27 +103,45 @@ export default function SideNav() {
               />
             </div>
           )}
+          {isAdmin && (
+            <Link href="/page/dashboard/" className={styles.sideLink}>
+              <div
+                className={`${styles.innerSideLink} ${
+                  pathname === "/page/dashboard" ||
+                  pathname.startsWith("/page/dashboard/")
+                    ? styles.activeLink
+                    : ""
+                }`}
+              >
+                <DashboardIcon
+                  alt="dashboard icon"
+                  aria-label="dashboard icon"
+                  className={styles.linkIcon}
+                />
+                <h1>Dashboard</h1>
+              </div>
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/page/account" className={styles.sideLink}>
+              <div
+                className={`${styles.innerSideLink} ${
+                  pathname === "/page/account" ||
+                  pathname.startsWith("/page/account/")
+                    ? styles.activeLink
+                    : ""
+                }`}
+              >
+                <AccountIcon
+                  alt="account icon"
+                  aria-label="account icon"
+                  className={styles.linkIcon}
+                />
+                <h1>Account</h1>
+              </div>
+            </Link>
+          )}
 
-          <Link
-            href="/page/dashboard/?card=revenue"
-            className={styles.sideLink}
-          >
-            <div
-              className={`${styles.innerSideLink} ${
-                pathname === "/page/dashboard" ||
-                pathname.startsWith("/page/dashboard/")
-                  ? styles.activeLink
-                  : ""
-              }`}
-            >
-              <DashboardIcon
-                alt="dashboard icon"
-                aria-label="dashboard icon"
-                className={styles.linkIcon}
-              />
-              <h1>Dashboard</h1>
-            </div>
-          </Link>
           <Link href="/page/inventory" className={styles.sideLink}>
             <div
               className={`${styles.innerSideLink} ${
@@ -141,29 +159,29 @@ export default function SideNav() {
               <h1>Inventory</h1>
             </div>
           </Link>
-
-          <Link href="/page/reports" className={styles.sideLink}>
-            <div
-              className={`${styles.innerSideLink} ${
-                pathname === "/page/reports" ||
-                pathname.startsWith("/page/reports/")
-                  ? styles.activeLink
-                  : ""
-              }`}
-            >
-              <ReportIcon
-                alt="reports icon"
-                aria-label="reports icon"
-                className={styles.linkIcon}
-              />
-              <h1>Reports</h1>
-            </div>
-          </Link>
+          {isAdmin && (
+            <Link href="/page/reports" className={styles.sideLink}>
+              <div
+                className={`${styles.innerSideLink} ${
+                  pathname === "/page/reports" ||
+                  pathname.startsWith("/page/reports/")
+                    ? styles.activeLink
+                    : ""
+                }`}
+              >
+                <ReportIcon
+                  alt="reports icon"
+                  aria-label="reports icon"
+                  className={styles.linkIcon}
+                />
+                <h1>Reports</h1>
+              </div>
+            </Link>
+          )}
           <Link href="/page/scan" className={styles.sideLink}>
             <div
               className={`${styles.innerSideLink} ${
-                pathname === "/page/scan" ||
-                pathname.startsWith("/page/scan/")
+                pathname === "/page/scan" || pathname.startsWith("/page/scan/")
                   ? styles.activeLink
                   : ""
               }`}
@@ -188,7 +206,6 @@ export default function SideNav() {
               <h1>Cart</h1>
             </div>
           </Link>
-          
         </div>
         <div className={styles.sideBottomContainer}>
           <Link href="/page/settings" className={styles.sideLink}>

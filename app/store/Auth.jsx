@@ -145,6 +145,49 @@ export const useAuthStore = create(
         }
       },
 
+      ensureAdminAccess: async (email) => {
+        try {
+          const { accessToken } = get();
+          const response = await fetch(`${SERVER_API}/auth/ensure-admin`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" ,
+              Authorization: `Bearer ${accessToken}`,
+              
+            },
+            
+            body: JSON.stringify({ email }),
+          });
+      
+          const data = await response.json();
+      
+          if (data.status === "success" && data.data?.user) {
+            // Update user info with admin status
+            set({
+              isAdmin: data.data.user.isAdmin,
+              isAuthorized: data.data.user.isAuthorized
+            });
+            
+            return { 
+              success: true, 
+              message: data.message,
+              isAdmin: data.data.user.isAdmin
+            };
+          }
+      
+          return { 
+            success: false, 
+            message: data.message || "Admin access update failed", 
+            isAdmin: false 
+          };
+        } catch (error) {
+          return { 
+            success: false, 
+            message: "Admin access update failed", 
+            isAdmin: false 
+          };
+        }
+      },
+
       logout: async () => {
         try {
           const { accessToken } = get();

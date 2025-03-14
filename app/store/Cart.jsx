@@ -184,17 +184,16 @@ export const useCartStore = create(
         }
       },
 
-      // Fix for the checkout function in useCartStore
-      checkout: async (paymentMethod, customerInfo) => {
+      checkout: async (paymentMethod, customerInfo, paymentStatus = "paid", amountPaid = 0, remainingBalance = 0) => {
         try {
           set({ loading: true, error: null });
           const accessToken = useAuthStore.getState().accessToken;
           const currentCart = get().cart;
-
+      
           if (!accessToken) {
             throw new Error("Authentication required");
           }
-
+      
           // Ensure we have a valid cart with items
           if (
             !currentCart ||
@@ -203,17 +202,29 @@ export const useCartStore = create(
           ) {
             throw new Error("Cart is empty");
           }
-
-          // Include cart items information in the request
+      
+          // Make sure amountPaid is a number
+          const parsedAmountPaid = parseFloat(amountPaid) || 0;
+          
+          // Calculate remainingBalance if not provided
+          const calculatedRemainingBalance = 
+            remainingBalance !== undefined ? 
+            parseFloat(remainingBalance) : 
+            Math.max(0, (currentCart.total || 0) - parsedAmountPaid);
+      
+          // Include cart items information and payment details in the request
           const checkoutData = {
             paymentMethod,
             customerInfo,
+            paymentStatus,
+            amountPaid: parsedAmountPaid,
+            remainingBalance: calculatedRemainingBalance,
             items: currentCart.items.map((item) => ({
-              productId: item.productId || item._id,
+              productId: item.product || item.productId || item._id,
               quantity: item.quantity,
             })),
           };
-
+      
           const response = await fetch(`${SERVER_API}/cart/checkout`, {
             method: "POST",
             headers: {
@@ -222,21 +233,28 @@ export const useCartStore = create(
             },
             body: JSON.stringify(checkoutData),
           });
-
+      
           const data = await response.json();
-
+      
           if (!response.ok) {
+            // Check for unavailable items error which might come as a structured response
+            if (data.unavailableItems) {
+              const error = new Error(data.message || "Some items are no longer available");
+              error.unavailableItems = data.unavailableItems;
+              throw error;
+            }
             throw new Error(
               data.message || `HTTP error! status: ${response.status}`
             );
           }
-
+      
           if (data.success) {
             set({ cart: null });
             return {
               success: true,
               data: data.data,
               message: "Checkout completed successfully",
+              orderId: data.data?.reportId || data.orderId || data.data?.orderId
             };
           } else {
             throw new Error(data.message || "Failed to complete checkout");
@@ -246,14 +264,12 @@ export const useCartStore = create(
           return {
             success: false,
             message: error.message,
-            // If there are unavailable items, pass them along
             unavailableItems: error.unavailableItems || [],
           };
         } finally {
           set({ loading: false });
         }
       },
-
       // Clear cart
       clearCart: async () => {
         try {

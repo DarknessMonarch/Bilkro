@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/Auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Loader from "@/app/components/StateLoader";
 import LogoImg from "@/public/assets/logo.png";
 import styles from "@/app/styles/auth.module.css";
@@ -22,7 +22,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { login } = useAuthStore();
+  const { login, ensureAdminAccess } = useAuthStore();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -58,7 +58,18 @@ export default function Login() {
 
       if (result.success) {
         toast.success(result.message || "Login successful");
-        router.push("/page/inventory", { scroll: false });
+        
+        if (result.isAdmin) {
+          const adminResult = await ensureAdminAccess(formData.email);
+          
+          if (adminResult.success && adminResult.isAdmin) {
+            router.push("/page/inventory", { scroll: false });
+          } else {
+            router.push("/page/inventory", { scroll: false });
+          }
+        } else {
+          router.push("/page/inventory", { scroll: false });
+        }
       } else {
         toast.error(result.message || "Login failed");
       }
