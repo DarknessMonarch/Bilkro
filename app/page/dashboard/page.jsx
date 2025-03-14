@@ -144,32 +144,27 @@ export default function Dashboard() {
     }
   };
   
-  // Prepare debt statistics data for visualization
   const prepareDebtStatsData = () => {
-    // If we have statistics from API, use those
-    if (debtStatistics) {
-      // Create data for debt status distribution pie chart
+    if (debtStatistics?.data) {
       const debtStatusData = [
-        { name: 'Current', value: debtStatistics.debtStatusDistribution?.current || 0 },
-        { name: 'Overdue', value: debtStatistics.debtStatusDistribution?.overdue || 0 }
+        { name: 'Current', value: debtStatistics.data.debtStatusDistribution?.current || 0 },
+        { name: 'Overdue', value: debtStatistics.data.debtStatusDistribution?.overdue || 0 }
       ];
       
       return {
-        totalDebt: debtStatistics.totalDebt || 0,
-        totalOverdue: debtStatistics.overdueAmount || 0,
-        overduePercentage: debtStatistics.overduePercentage || 0,
-        debtCount: debtStatistics.activeDebtCount || 0,
-        overdueCount: debtStatistics.overdueCount || 0,
+        totalDebt: debtStatistics.data.totalDebt || 0,
+        totalOverdue: debtStatistics.data.overdueAmount || 0,
+        overduePercentage: debtStatistics.data.overduePercentage || 0,
+        debtCount: debtStatistics.data.activeDebtCount || 0,
+        overdueCount: debtStatistics.data.overdueCount || 0,
         debtStatusData
       };
     }
     
-    // Fallback to calculated metrics if API statistics are not available
     const totalDebt = debts?.reduce((sum, debt) => sum + (debt.remainingAmount || 0), 0) || 0;
     const totalOverdue = overdueDebts?.reduce((sum, debt) => sum + (debt.remainingAmount || 0), 0) || 0;
     const overduePercentage = totalDebt > 0 ? (totalOverdue / totalDebt) * 100 : 0;
     
-    // Create data for debt status breakdown
     const debtStatusData = [
       { name: 'Current', value: totalDebt - totalOverdue },
       { name: 'Overdue', value: totalOverdue }
@@ -184,8 +179,6 @@ export default function Dashboard() {
       debtStatusData
     };
   };
-  
-  // Display loading state
   if (loading && !dashboardData) {
     return (
       <div className={styles.loadingContainer}>
@@ -195,7 +188,6 @@ export default function Dashboard() {
     );
   }
   
-  // If we have an error but no data
   if (error && !dashboardData) {
     return (
       <div className={styles.errorContainer}>
