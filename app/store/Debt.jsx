@@ -10,11 +10,10 @@ export const useDebtStore = create(
       debts: [],
       singleDebt: null,
       overdueDebts: null,
-      debtStatistics: null, // New state for dashboard statistics
+      debtStatistics: null, 
       loading: false,
       error: null,
 
-      // Get user debts
       getUserDebts: async () => {
         try {
           set({ loading: true, error: null });
@@ -51,7 +50,6 @@ export const useDebtStore = create(
         }
       },
       
-      // NEW FUNCTION: Get debt statistics for dashboard
       getDebtStatistics: async () => {
         try {
           set({ loading: true, error: null });
@@ -88,7 +86,6 @@ export const useDebtStore = create(
         }
       },
       
-      // Get single debt by ID
       getDebtById: async (debtId) => {
         try {
           set({ loading: true, error: null });
@@ -125,7 +122,6 @@ export const useDebtStore = create(
         }
       },
 
-      // Make payment on a debt
       makePayment: async (debtId, paymentData) => {
         try {
           set({ loading: true, error: null });
@@ -152,11 +148,9 @@ export const useDebtStore = create(
           const data = await response.json();
           
           if (data.success) {
-            // Update the single debt and refresh the debt list
             set({ singleDebt: data.data });
-            get().getUserDebts(); // Refresh the list
+            get().getUserDebts(); 
             
-            // Also refresh debt statistics if available
             if (get().debtStatistics) {
               get().getDebtStatistics();
             }
@@ -173,7 +167,6 @@ export const useDebtStore = create(
         }
       },
 
-      // Admin: Get all debts
       getAllDebts: async (params = {}) => {
         try {
           set({ loading: true, error: null });
@@ -193,7 +186,7 @@ export const useDebtStore = create(
           
           const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
           
-          const response = await fetch(`${SERVER_API}/debt/admin${queryString}`, {
+          const response = await fetch(`${SERVER_API}/debt/all${queryString}`, {
             headers: {
               'Authorization': `Bearer ${accessToken}`
             }

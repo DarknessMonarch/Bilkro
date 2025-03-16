@@ -7,6 +7,7 @@ import Logo from "@/public/assets/logo.png";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/app/store/Auth";
 import { useDrawerStore } from "@/app/store/Drawer";
+import { GrMoney as DebtIcon } from "react-icons/gr";
 import styles from "@/app/styles/sideNav.module.css";
 import { IoMdClose as CloseIcon } from "react-icons/io";
 import { useEffect, useState, useCallback } from "react";
@@ -178,6 +179,25 @@ export default function SideNav() {
               </div>
             </Link>
           )}
+
+          <Link href="/page/debt" className={styles.sideLink}>
+            <div
+              className={`${styles.innerSideLink} ${
+                pathname === "/page/debt" || pathname.startsWith("/page/debt/")
+                  ? styles.activeLink
+                  : ""
+              }`}
+            >
+              <DebtIcon
+                alt="debt icon"
+                aria-label="debt icon"
+                className={styles.linkIcon}
+              />
+              <h1>Debt</h1>
+            </div>
+          </Link>
+
+
           <Link href="/page/scan" className={styles.sideLink}>
             <div
               className={`${styles.innerSideLink} ${

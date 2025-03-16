@@ -7,8 +7,7 @@
     overflow: hidden;
     overflow-y: auto;
     color: var(--primary-color);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+
   }
 
   .dashboardHeader {
@@ -698,6 +697,165 @@
   .overdueRow:hover {
     background-color: rgba(244, 67, 54, 0.1);
   }
+
+  /* Payment Input Styles */
+.paymentContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paymentInput {
+  width: 80px;
+  padding: 8px 10px;
+  border: 1px solid rgba(224, 224, 224, 0.3);
+  border-radius: 6px;
+  background-color: var(--background-color);
+  color: var(--primary-color);
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.paymentInput:focus {
+  outline: none;
+  border-color: var(--tertiary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.paymentInput::placeholder {
+  color: var(--primary-light-color);
+  opacity: 0.6;
+}
+
+.paymentButton {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--tertiary-color);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.paymentButton:hover {
+  background-color: var(--tertiary-color-dark);
+}
+
+.paymentButton:disabled {
+  background-color: var(--tertiary-color-light);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Make tables more responsive */
+@media screen and (max-width: 992px) {
+  .dataTable {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .paymentContainer {
+    min-width: 150px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dataTable thead {
+    display: none;
+  }
+  
+  .dataTable, 
+  .dataTable tbody, 
+  .dataTable tr, 
+  .dataTable td {
+    display: block;
+    width: 100%;
+  }
+  
+  .dataTable tr {
+    margin-bottom: 15px;
+    border: 1px solid rgba(224, 224, 224, 0.2);
+    border-radius: 8px;
+    padding: 8px;
+  }
+  
+  .dataTable td {
+    display: flex;
+    padding: 10px 8px;
+    text-align: right;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(224, 224, 224, 0.1);
+  }
+  
+  .dataTable td:last-child {
+    border-bottom: none;
+  }
+  
+  .dataTable td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    color: var(--primary-light-color);
+  }
+  
+  .paymentContainer {
+    justify-content: flex-end;
+    width: 100%;
+  }
+  
+  .paymentInput {
+    flex: 1;
+    max-width: 120px;
+  }
+  
+  /* Pagination responsive adjustments */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .paginationButton {
+    min-width: 80px;
+  }
+}
+
+/* Additional styles for pagination if not already defined */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 8px 16px;
+}
+
+.paginationButton {
+  background-color: var(--background-color);
+  border: 1px solid rgba(224, 224, 224, 0.3);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: var(--tertiary-color);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 }
 
 /* Media Queries */

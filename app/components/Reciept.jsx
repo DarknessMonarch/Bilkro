@@ -6,23 +6,38 @@ import LogoImg from "@/public/assets/logo.png";
 import styles from "@/app/styles/receipt.module.css";
 import { useRouter } from "next/navigation";
 import { BsCartPlus as CartIcon } from "react-icons/bs";
-import { FaCheckCircle, FaPrint, FaDownload, FaHome, FaTimes } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaPrint,
+  FaDownload,
+  FaHome,
+  FaTimes,
+  FaWhatsapp,
+} from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image as PDFImage, pdf } from "@react-pdf/renderer";
+import {
+  PDFDownloadLink,
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image as PDFImage,
+  pdf,
+} from "@react-pdf/renderer";
 
-// Define styles for PDF document
 const pdfStyles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
+    fontFamily: "Helvetica",
     padding: 30,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   header: {
     marginBottom: 20,
-    textAlign: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    textAlign: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   logo: {
     width: 100,
@@ -31,12 +46,12 @@ const pdfStyles = StyleSheet.create({
   },
   companyName: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 10,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   subtitle: {
@@ -48,27 +63,27 @@ const pdfStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
     paddingBottom: 4,
-    borderBottom: '1px solid #EEEEEE',
+    borderBottom: "1px solid #EEEEEE",
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 5,
   },
   column: {
-    flexDirection: 'column',
+    flexDirection: "column",
     marginBottom: 10,
   },
   leftColumn: {
-    width: '50%',
+    width: "50%",
   },
   rightColumn: {
-    width: '50%',
+    width: "50%",
   },
   label: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginRight: 5,
     fontSize: 10,
   },
@@ -76,127 +91,133 @@ const pdfStyles = StyleSheet.create({
     fontSize: 10,
   },
   table: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
   },
   tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#FAFAFA',
+    flexDirection: "row",
+    backgroundColor: "#FAFAFA",
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: "#EEEEEE",
     padding: 8,
   },
   tableRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: "#EEEEEE",
     padding: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tableCell: {
     fontSize: 9,
   },
   itemCell: {
-    width: '40%',
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: "40%",
+    flexDirection: "row",
+    alignItems: "center",
   },
   itemImage: {
     width: 30,
     height: 30,
     marginRight: 5,
-    objectFit: 'contain',
+    objectFit: "contain",
   },
   itemDetails: {
-    flexDirection: 'column',
+    flexDirection: "column",
   },
   quantityCell: {
-    width: '20%',
+    width: "20%",
   },
   priceCell: {
-    width: '20%',
+    width: "20%",
   },
   totalCell: {
-    width: '20%',
+    width: "20%",
   },
   totalsSection: {
     marginTop: 10,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '40%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "40%",
     marginBottom: 5,
   },
   finalTotal: {
     borderTopWidth: 1,
-    borderTopColor: '#000000',
+    borderTopColor: "#000000",
     paddingTop: 5,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   footer: {
     marginTop: 30,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 10,
-    color: '#666666',
+    color: "#666666",
   },
   paidStatus: {
-    color: '#4CAF50',
-    fontWeight: 'bold',
+    color: "#4CAF50",
+    fontWeight: "bold",
   },
   partialStatus: {
-    color: '#FFA500',
-    fontWeight: 'bold',
+    color: "#FFA500",
+    fontWeight: "bold",
   },
   unpaidStatus: {
-    color: '#F44336',
-    fontWeight: 'bold',
+    color: "#F44336",
+    fontWeight: "bold",
   },
   // New styles for payment information
   paymentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '40%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "40%",
     marginBottom: 5,
   },
   remainingBalance: {
-    fontWeight: 'bold',
-    color: '#F44336',
-  }
+    fontWeight: "bold",
+    color: "#F44336",
+  },
 });
 
 // PDF Document Component
 const ReceiptPDF = ({ orderData, customerInfo }) => {
   const formatDate = (date) => {
     const d = new Date(date || Date.now());
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   // Function to determine payment status style
   const getStatusStyle = (status) => {
-    switch(status?.toLowerCase()) {
-      case 'paid': return pdfStyles.paidStatus;
-      case 'partial': return pdfStyles.partialStatus;
-      case 'unpaid': return pdfStyles.unpaidStatus;
-      default: return pdfStyles.paidStatus;
+    switch (status?.toLowerCase()) {
+      case "paid":
+        return pdfStyles.paidStatus;
+      case "partial":
+        return pdfStyles.partialStatus;
+      case "unpaid":
+        return pdfStyles.unpaidStatus;
+      default:
+        return pdfStyles.paidStatus;
     }
   };
 
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
-        <View style={{ alignItems: 'center' }}>
+        <View style={{ alignItems: "center" }}>
           <Text style={pdfStyles.title}>Purchase Receipt</Text>
-          <Text style={pdfStyles.subtitle}>Order ID: {orderData.reportId} | Date: {formatDate()}</Text>
+          <Text style={pdfStyles.subtitle}>
+            Order ID: {orderData.reportId} | Date: {formatDate()}
+          </Text>
         </View>
 
         {/* Customer and Payment Info */}
@@ -234,13 +255,14 @@ const ReceiptPDF = ({ orderData, customerInfo }) => {
             <View style={pdfStyles.row}>
               <Text style={pdfStyles.label}>Payment Method:</Text>
               <Text style={pdfStyles.value}>
-                {customerInfo.paymentMethod?.charAt(0).toUpperCase() + customerInfo.paymentMethod?.slice(1)}
+                {customerInfo.paymentMethod?.charAt(0).toUpperCase() +
+                  customerInfo.paymentMethod?.slice(1)}
               </Text>
             </View>
             <View style={pdfStyles.row}>
               <Text style={pdfStyles.label}>Payment Status:</Text>
               <Text style={getStatusStyle(orderData.paymentStatus)}>
-                {orderData.paymentStatus?.toUpperCase() || 'PAID'}
+                {orderData.paymentStatus?.toUpperCase() || "PAID"}
               </Text>
             </View>
           </View>
@@ -249,15 +271,21 @@ const ReceiptPDF = ({ orderData, customerInfo }) => {
         {/* Order Summary */}
         <View style={pdfStyles.section}>
           <Text style={pdfStyles.sectionTitle}>Order Summary</Text>
-          
+
           {/* Table Header */}
           <View style={pdfStyles.tableHeader}>
             <Text style={[pdfStyles.tableCell, pdfStyles.itemCell]}>Item</Text>
-            <Text style={[pdfStyles.tableCell, pdfStyles.quantityCell]}>Quantity</Text>
-            <Text style={[pdfStyles.tableCell, pdfStyles.priceCell]}>Unit Price</Text>
-            <Text style={[pdfStyles.tableCell, pdfStyles.totalCell]}>Total</Text>
+            <Text style={[pdfStyles.tableCell, pdfStyles.quantityCell]}>
+              Quantity
+            </Text>
+            <Text style={[pdfStyles.tableCell, pdfStyles.priceCell]}>
+              Unit Price
+            </Text>
+            <Text style={[pdfStyles.tableCell, pdfStyles.totalCell]}>
+              Total
+            </Text>
           </View>
-          
+
           {/* Table Rows */}
           {orderData.items.map((item, index) => (
             <View key={index} style={pdfStyles.tableRow}>
@@ -267,14 +295,16 @@ const ReceiptPDF = ({ orderData, customerInfo }) => {
                 )}
                 <View style={pdfStyles.itemDetails}>
                   <Text>{item.name}</Text>
-                  <Text style={{ fontSize: 8, color: '#666' }}>ID: {item.productID}</Text>
+                  <Text style={{ fontSize: 8, color: "#666" }}>
+                    ID: {item.productID}
+                  </Text>
                 </View>
               </View>
               <Text style={[pdfStyles.tableCell, pdfStyles.quantityCell]}>
                 {item.quantity} {item.unit}
               </Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.priceCell]}>
-                ${(item.price).toLocaleString()}
+                ${item.price.toLocaleString()}
               </Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.totalCell]}>
                 ${(item.price * item.quantity).toLocaleString()}
@@ -297,20 +327,30 @@ const ReceiptPDF = ({ orderData, customerInfo }) => {
             <Text>Total:</Text>
             <Text>${orderData.total.toLocaleString()}</Text>
           </View>
-          
+
           {/* Payment details section for partial or unpaid */}
-          {orderData.paymentStatus && orderData.paymentStatus.toLowerCase() !== 'paid' && (
-            <>
-              <View style={pdfStyles.paymentRow}>
-                <Text>Amount Paid:</Text>
-                <Text>${parseFloat(orderData.amountPaid || 0).toLocaleString()}</Text>
-              </View>
-              <View style={[pdfStyles.paymentRow, pdfStyles.remainingBalance]}>
-                <Text>Remaining Balance:</Text>
-                <Text>${parseFloat(orderData.remainingBalance || 0).toLocaleString()}</Text>
-              </View>
-            </>
-          )}
+          {orderData.paymentStatus &&
+            orderData.paymentStatus.toLowerCase() !== "paid" && (
+              <>
+                <View style={pdfStyles.paymentRow}>
+                  <Text>Amount Paid:</Text>
+                  <Text>
+                    ${parseFloat(orderData.amountPaid || 0).toLocaleString()}
+                  </Text>
+                </View>
+                <View
+                  style={[pdfStyles.paymentRow, pdfStyles.remainingBalance]}
+                >
+                  <Text>Remaining Balance:</Text>
+                  <Text>
+                    $
+                    {parseFloat(
+                      orderData.remainingBalance || 0
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+              </>
+            )}
         </View>
 
         {/* Footer */}
@@ -319,7 +359,10 @@ const ReceiptPDF = ({ orderData, customerInfo }) => {
             <PDFImage src="/assets/logo.png" style={pdfStyles.logo} />
           </View>
           <Text>Thank you for your business!</Text>
-          <Text>Keep this receipt for your records. For any questions or concerns regarding your order,</Text>
+          <Text>
+            Keep this receipt for your records. For any questions or concerns
+            regarding your order,
+          </Text>
           <Text>please contact our customer support.</Text>
         </View>
       </Page>
@@ -332,29 +375,33 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const receiptRef = useRef(null);
   const router = useRouter();
-  
+
   const formatDate = (date) => {
     const d = new Date(date || Date.now());
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
-  
+
   // Helper function to determine payment status class
   const getPaymentStatusClass = (status) => {
-    const statusLower = status?.toLowerCase() || 'paid';
-    switch(statusLower) {
-      case 'paid': return styles.paidStatus;
-      case 'partial': return styles.partialStatus;
-      case 'unpaid': return styles.unpaidStatus;
-      default: return styles.paidStatus;
+    const statusLower = status?.toLowerCase() || "paid";
+    switch (statusLower) {
+      case "paid":
+        return styles.paidStatus;
+      case "partial":
+        return styles.partialStatus;
+      case "unpaid":
+        return styles.unpaidStatus;
+      default:
+        return styles.paidStatus;
     }
   };
-  
+
   const handlePrintPdf = async () => {
     setIsPdfGenerating(true);
     try {
@@ -362,13 +409,13 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
       const blob = await pdf(
         <ReceiptPDF orderData={orderData} customerInfo={customerInfo} />
       ).toBlob();
-      
+
       // Create URL from blob
       const url = URL.createObjectURL(blob);
-      
+
       // Open the PDF in a new window
-      const printWindow = window.open(url, '_blank');
-      
+      const printWindow = window.open(url, "_blank");
+
       // Wait for window to load then print
       printWindow.onload = () => {
         printWindow.print();
@@ -380,17 +427,81 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
       setIsPdfGenerating(false);
     }
   };
-  
+
   const handleContinueShopping = () => {
     setShowReceipt(false);
     if (onClose) {
       onClose();
-      router.push('/page/inventory');
+      router.push("/page/inventory");
     }
   };
-  
+
+  const handleShareWhatsApp = async () => {
+    setIsPdfGenerating(true);
+    try {
+      // 1. Generate PDF blob
+      const blob = await pdf(
+        <ReceiptPDF orderData={orderData} customerInfo={customerInfo} />
+      ).toBlob();
+
+      // 2. Create a shareable file
+      const file = new File([blob], `receipt-${orderData.reportId}.pdf`, {
+        type: "application/pdf",
+      });
+
+      // 3. Check if the Web Share API is supported (mainly on mobile)
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        // Use native share sheet (works on mobile WhatsApp)
+        await navigator.share({
+          title: `Purchase Receipt #${orderData.reportId}`,
+          text: `Here's your receipt for order #${orderData.reportId}`,
+          files: [file],
+        });
+      } else {
+        // Fallback for desktop or browsers without share API
+        // We need to create a temporary download link since WhatsApp Web doesn't accept direct file shares
+        const downloadUrl = URL.createObjectURL(blob);
+
+        // Create a temporary download link
+        const tempLink = document.createElement("a");
+        tempLink.href = downloadUrl;
+        tempLink.setAttribute("download", `receipt-${orderData.reportId}.pdf`);
+        document.body.appendChild(tempLink);
+
+        // Force click to download
+        tempLink.click();
+
+        // Clean up
+        document.body.removeChild(tempLink);
+        URL.revokeObjectURL(downloadUrl);
+
+        // Open WhatsApp with instructional message
+        const whatsappText = encodeURIComponent(
+          "I've downloaded my receipt PDF and will share it with you directly in this chat."
+        );
+        window.open(`https://wa.me/?text=${whatsappText}`, "_blank");
+
+        // Show instruction to user
+        alert(
+          "The receipt PDF has been downloaded. Please attach this file manually in your WhatsApp chat."
+        );
+      }
+    } catch (error) {
+      console.error("Error sharing via WhatsApp:", error);
+      alert(
+        "There was an error generating or sharing the receipt. Please try the download button instead."
+      );
+    } finally {
+      setIsPdfGenerating(false);
+    }
+  };
+
   if (!showReceipt) return null;
-  
+
   return (
     <div className={styles.receiptOverlay}>
       <div className={styles.receiptContainer}>
@@ -398,45 +509,67 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
           <div className={styles.successIcon}>
             <FaCheckCircle />
           </div>
-          <h1>Thank You for Your Purchase!</h1>
+          <h1>Thank you for doing business with us!</h1>
           <p>Your order has been successfully placed.</p>
         </div>
-        
+
         <div className={styles.receiptContent} ref={receiptRef}>
           <div className={styles.receiptTitle}>
             <h2>Purchase Receipt</h2>
             <div className={styles.receiptMeta}>
-              <p><strong>Order ID:</strong> {orderData.reportId}</p>
-              <p><strong>Date:</strong> {formatDate()}</p>
+              <p>
+                <strong>Order ID:</strong> {orderData.reportId}
+              </p>
+              <p>
+                <strong>Date:</strong> {formatDate()}
+              </p>
             </div>
           </div>
-          
+
           <div className={styles.receiptInfo}>
             <div className={styles.customerInfo}>
               <h3>Customer Information</h3>
-              <p><strong>Name:</strong> {customerInfo.name}</p>
-              {customerInfo.email && <p><strong>Email:</strong> {customerInfo.email}</p>}
-              {customerInfo.phone && <p><strong>Phone:</strong> {customerInfo.phone}</p>}
+              <p>
+                <strong>Name:</strong> {customerInfo.name}
+              </p>
+              {customerInfo.email && (
+                <p>
+                  <strong>Email:</strong> {customerInfo.email}
+                </p>
+              )}
+              {customerInfo.phone && (
+                <p>
+                  <strong>Phone:</strong> {customerInfo.phone}
+                </p>
+              )}
               {customerInfo.address && (
                 <div>
-                  <p><strong>Shipping Address:</strong></p>
+                  <p>
+                    <strong>Shipping Address:</strong>
+                  </p>
                   <p>{customerInfo.address}</p>
                 </div>
               )}
             </div>
-            
+
             <div className={styles.paymentInfo}>
               <h3>Payment Information</h3>
-              <p><strong>Payment Method:</strong> {customerInfo.paymentMethod?.charAt(0).toUpperCase() + customerInfo.paymentMethod?.slice(1)}</p>
               <p>
-                <strong>Payment Status:</strong> 
-                <span className={getPaymentStatusClass(orderData.paymentStatus)}>
-                  {orderData.paymentStatus?.toUpperCase() || 'PAID'}
+                <strong>Payment Method:</strong>{" "}
+                {customerInfo.paymentMethod?.charAt(0).toUpperCase() +
+                  customerInfo.paymentMethod?.slice(1)}
+              </p>
+              <p>
+                <strong>Payment Status:</strong>
+                <span
+                  className={getPaymentStatusClass(orderData.paymentStatus)}
+                >
+                  {orderData.paymentStatus?.toUpperCase() || "PAID"}
                 </span>
               </p>
             </div>
           </div>
-          
+
           <div className={styles.receiptItemsContainer}>
             <h3>Order Summary</h3>
             <table className={styles.receiptItems}>
@@ -466,19 +599,23 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
                         )}
                         <div>
                           <span className={styles.itemName}>{item.name}</span>
-                          <span className={styles.itemId}>ID: {item.productID}</span>
+                          <span className={styles.itemId}>
+                            ID: {item.productID}
+                          </span>
                         </div>
                       </div>
                     </td>
-                    <td>{item.quantity} {item.unit}</td>
-                    <td>${(item.price).toLocaleString()}</td>
+                    <td>
+                      {item.quantity} {item.unit}
+                    </td>
+                    <td>${item.price.toLocaleString()}</td>
                     <td>${(item.price * item.quantity).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          
+
           <div className={styles.receiptTotal}>
             <div className={styles.totalRow}>
               <span>Subtotal:</span>
@@ -492,22 +629,32 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
               <span>Total:</span>
               <span>${orderData.total.toLocaleString()}</span>
             </div>
-            
+
             {/* Payment details section for partial or unpaid */}
-            {orderData.paymentStatus && orderData.paymentStatus.toLowerCase() !== 'paid' && (
-              <>
-                <div className={styles.totalRow}>
-                  <span>Amount Paid:</span>
-                  <span>${parseFloat(orderData.amountPaid || 0).toLocaleString()}</span>
-                </div>
-                <div className={`${styles.totalRow} ${styles.remainingBalance}`}>
-                  <span>Remaining Balance:</span>
-                  <span>${parseFloat(orderData.remainingBalance || 0).toLocaleString()}</span>
-                </div>
-              </>
-            )}
+            {orderData.paymentStatus &&
+              orderData.paymentStatus.toLowerCase() !== "paid" && (
+                <>
+                  <div className={styles.totalRow}>
+                    <span>Amount Paid:</span>
+                    <span>
+                      ${parseFloat(orderData.amountPaid || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div
+                    className={`${styles.totalRow} ${styles.remainingBalance}`}
+                  >
+                    <span>Remaining Balance:</span>
+                    <span>
+                      $
+                      {parseFloat(
+                        orderData.remainingBalance || 0
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                </>
+              )}
           </div>
-          
+
           <div className={styles.receiptFooter}>
             <div className={styles.logoContainer}>
               <Image
@@ -519,32 +666,53 @@ export function CheckoutReceipt({ orderData, customerInfo, onClose }) {
               />
             </div>
             <p>Thank you for your business!</p>
-            <p className={styles.receiptNote}>Keep this receipt for your records. For any questions or concerns regarding your order, please contact our customer support.</p>
+            <p className={styles.receiptNote}>
+              Keep this receipt for your records. For any questions or concerns
+              regarding your order, please contact our customer support.
+            </p>
           </div>
         </div>
-        
+
         <div className={styles.receiptActions}>
-          <button 
-            className={styles.actionButton} 
+          <button
+            className={styles.actionButton}
             onClick={handlePrintPdf}
             disabled={isPdfGenerating}
           >
-            <FaPrint /> {isPdfGenerating ? 'Generating PDF...' : 'Print Receipt'}
+            <FaPrint />{" "}
+            {isPdfGenerating ? "Generating PDF..." : "Print Receipt"}
           </button>
-          
-          <PDFDownloadLink 
-            document={<ReceiptPDF orderData={orderData} customerInfo={customerInfo} />}
+
+          <PDFDownloadLink
+            document={
+              <ReceiptPDF orderData={orderData} customerInfo={customerInfo} />
+            }
             fileName={`bilkro-receipt-${orderData.reportId}.pdf`}
             className={styles.actionButton}
           >
-            {({ blob, url, loading, error }) => 
-              loading ? 
-                'Generating PDF...' : 
-                <span><FaDownload /> Download PDF</span>
+            {({ blob, url, loading, error }) =>
+              loading ? (
+                "Generating PDF..."
+              ) : (
+                <span>
+                  <FaDownload /> Download PDF
+                </span>
+              )
             }
           </PDFDownloadLink>
-          
-          <button className={styles.continueButton} onClick={handleContinueShopping}>
+
+          <button
+            className={`${styles.actionButton} ${styles.whatsappButton}`}
+            onClick={handleShareWhatsApp}
+            disabled={isPdfGenerating}
+          >
+            <FaWhatsapp />{" "}
+            {isPdfGenerating ? "Preparing PDF..." : "Share PDF via WhatsApp"}
+          </button>
+          <button
+            className={styles.continueButton}
+            onClick={handleContinueShopping}
+          >
             <FaHome /> Continue Shopping
           </button>
         </div>
