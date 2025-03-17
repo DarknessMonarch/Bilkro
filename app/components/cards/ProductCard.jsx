@@ -24,8 +24,6 @@ export default function ProductCard({
 }) {
   const router = useRouter();
   const [orderQuantity, setOrderQuantity] = useState(1);
-  const [addedToCart, setAddedToCart] = useState(false);
-
   const handleAddToCart = (e) => {
     e.stopPropagation();
 
@@ -36,6 +34,7 @@ export default function ProductCard({
 
     // Use the cart store function if provided, otherwise use local fallback
     if (onAddToCart) {
+      // Pass the orderQuantity to the parent component
       onAddToCart(_id, orderQuantity);
       
       // Set UI feedback state
@@ -75,7 +74,7 @@ export default function ProductCard({
         setAddedToCart(false);
       }, 3000);
     }
-  };
+  };;
 
   const openProduct = () => {
     if (onClick) {
