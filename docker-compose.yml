@@ -1,5 +1,5 @@
 services:
-  tipsfrontend:
+  bilkro:
     container_name: bilkro
     restart: unless-stopped
     build: .
